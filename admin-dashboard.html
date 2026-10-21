@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="home css.css">
+    
+    <script>
+function logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    window.location.href = "login-signup.html";
+}
+const token = localStorage.getItem("token");
+const role = localStorage.getItem("role");
+
+if (!token || role !== "admin") {
+  alert("Access denied");
+    window.location.href = "login-signup.html";
+}
+</script>
+
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f8; }
+        .admin-dashboard { max-width: 900px; margin: 40px auto; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 32px; }
+        h1 { text-align: center; margin-bottom: 32px; }
+        .stats { display: flex; justify-content: space-between; margin-bottom: 32px; }
+        .stat-box { flex: 1; background: #f0f2f5; margin: 0 12px; border-radius: 8px; padding: 24px; text-align: center; }
+        .stat-box h2 { margin: 0 0 8px; font-size: 2.2em; color: #2d7cff; }
+        .stat-box p { margin: 0; color: #555; }
+        .orders-table { width: 100%; border-collapse: collapse; margin-top: 24px; }
+        .orders-table th, .orders-table td { padding: 12px 8px; border-bottom: 1px solid #e0e0e0; }
+        .orders-table th { background: #f7f9fa; }
+        .orders-table tr:last-child td { border-bottom: none; }
+    </style>
+</head>
+<body>
+    <div class="admin-dashboard">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <h1>Admin Dashboard</h1>
+                    <button id="logoutBtn" style="background:#e74c3c;color:#fff;padding:8px 18px;border:none;border-radius:6px;font-weight:600;font-size:15px;cursor:pointer;">Logout</button>
+                </div>
+        <div class="stats">
+            <div class="stat-box">
+                <h2 id="totalOrders">0</h2>
+                <p>Total Orders</p>
+            </div>
+            <div class="stat-box">
+                <h2 id="totalSales">₹0</h2>
+                <p>Total Sales</p>
+            </div>
+            <div class="stat-box">
+                <h2 id="totalCustomers">0</h2>
+                <p>Total Customers</p>
+            </div>
+        </div>
+        <h2 style="margin-top:40px;">Recent Orders</h2>
+            <h2 style="margin-top:40px;">Sales & Cancellations Calendar</h2>
+            <div id="calendarContainer" style="margin-bottom:32px;"></div>
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody id="ordersBody">
+                <!-- Orders will be loaded here -->
+            </tbody>
+        </table>
+        <!-- Customer Orders Modal -->
+        <div id="customerModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);z-index:999;align-items:center;justify-content:center;">
+            <div style="background:#fff;padding:32px 24px;border-radius:10px;min-width:320px;max-width:90vw;max-height:80vh;overflow:auto;box-shadow:0 2px 16px rgba(0,0,0,0.15);position:relative;">
+                <button id="closeModalBtn" style="position:absolute;top:10px;right:10px;background:transparent;border:none;font-size:22px;cursor:pointer;">&times;</button>
+                <h2 id="modalCustomerName">Customer Orders</h2>
+                <table style="width:100%;margin-top:18px;border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:#f7f9fa;">
+                            <th>Order ID</th>
+                            <th>Product(s)</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalOrdersBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+                // Calendar rendering logic
+                function renderCalendar(orders) {
+                    // Get all unique dates from orders
+                    const dateMap = {};
+                    orders.forEach(o => {
+                        if (!dateMap[o.date]) dateMap[o.date] = { sales: 0, cancels: 0 };
+                        if (o.status === 'Cancelled') dateMap[o.date].cancels += 1;
+                        else dateMap[o.date].sales += o.amount;
+                    });
+                    // Get month/year from latest order or today
+                    let latest = orders.length ? orders[0].date : (new Date()).toISOString().slice(0,10);
+                    let [year, month] = latest.split('-');
+                    month = parseInt(month, 10);
+                    year = parseInt(year, 10);
+                    // Build calendar for this month
+                    const firstDay = new Date(year, month-1, 1);
+                    const lastDay = new Date(year, month, 0);
+                    let html = '<table style="width:100%;border-collapse:collapse;text-align:center;background:#f7f9fa;border-radius:8px;overflow:hidden;">';
+                    html += '<thead><tr style="background:#e0e0e0;"><th style="border:1px solid #d0d0d0;">Sun</th><th style="border:1px solid #d0d0d0;">Mon</th><th style="border:1px solid #d0d0d0;">Tue</th><th style="border:1px solid #d0d0d0;">Wed</th><th style="border:1px solid #d0d0d0;">Thu</th><th style="border:1px solid #d0d0d0;">Fri</th><th style="border:1px solid #d0d0d0;">Sat</th></tr></thead><tbody>';
+                    let d = 1, started = false;
+                    for (let r = 0; r < 6; r++) {
+                        html += '<tr>';
+                        for (let c = 0; c < 7; c++) {
+                            if (!started && c === firstDay.getDay()) started = true;
+                            if (!started || d > lastDay.getDate()) {
+                                html += '<td style="background:#fafbfc;height:60px;border:1px solid #d0d0d0;"></td>';
+                            } else {
+                                const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                                const sales = dateMap[dateStr]?.sales || 0;
+                                const cancels = dateMap[dateStr]?.cancels || 0;
+                                html += `<td style="height:60px;vertical-align:top;padding:4px 2px;border:1px solid #d0d0d0;background:#fff;">
+                                    <div style="font-weight:600;">${d}</div>
+                                    <div style="font-size:13px;color:#2d7cff;">₹${sales}</div>
+                                    <div style="font-size:12px;color:#e74c3c;">❌${cancels}</div>
+                                </td>`;
+                                d++;
+                            }
+                        }
+                        html += '</tr>';
+                        if (d > lastDay.getDate()) break;
+                    }
+                    html += '</tbody></table>';
+                    document.getElementById('calendarContainer').innerHTML = html;
+                }
+        // Demo data for admin dashboard
+        const orders = [
+            { id: 'ORD001', customer: 'Amit Sharma', date: '2026-01-10', status: 'Delivered', amount: 2500, products: ['Sofa', 'Table'] },
+            { id: 'ORD002', customer: 'Priya Singh', date: '2026-01-09', status: 'Pending', amount: 1800, products: ['Chair'] },
+            { id: 'ORD003', customer: 'Rahul Jain', date: '2026-01-08', status: 'Shipped', amount: 3200, products: ['Bed', 'Wardrobe'] },
+            { id: 'ORD004', customer: 'Sneha Patel', date: '2026-01-07', status: 'Cancelled', amount: 900, products: ['Bookshelf'] },
+            { id: 'ORD005', customer: 'Vikas Gupta', date: '2026-01-06', status: 'Delivered', amount: 4100, products: ['Dining Set', 'Chair'] }
+        ];
+        renderCalendar(orders);
+        document.getElementById('totalOrders').textContent = orders.length;
+        document.getElementById('totalSales').textContent = '₹' + orders.reduce((sum, o) => sum + o.amount, 0);
+        document.getElementById('totalCustomers').textContent = new Set(orders.map(o => o.customer)).size;
+        const ordersBody = document.getElementById('ordersBody');
+        orders.forEach(order => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${order.id}</td><td><a href="#" class="customer-link" data-customer="${order.customer}">${order.customer}</a></td><td>${order.date}</td><td>${order.status}</td><td>₹${order.amount}</td>`;
+            ordersBody.appendChild(tr);
+        });
+
+        // Modal logic for customer orders
+        const modal = document.getElementById('customerModal');
+        const modalCustomerName = document.getElementById('modalCustomerName');
+        const modalOrdersBody = document.getElementById('modalOrdersBody');
+        document.querySelectorAll('.customer-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const customer = this.getAttribute('data-customer');
+                modalCustomerName.textContent = customer + "'s Orders";
+                // Filter orders for this customer
+                const custOrders = orders.filter(o => o.customer === customer && (o.status === 'Delivered' || o.status === 'Shipped' || o.status === 'Pending'));
+                modalOrdersBody.innerHTML = '';
+                if (custOrders.length === 0) {
+                    modalOrdersBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No confirmed orders.</td></tr>';
+                } else {
+                    custOrders.forEach(o => {
+                        modalOrdersBody.innerHTML += `<tr><td>${o.id}</td><td>${o.products.join(', ')}</td><td>${o.date}</td><td>${o.status}</td><td>₹${o.amount}</td></tr>`;
+                    });
+                }
+                modal.style.display = 'flex';
+            });
+        });
+        document.getElementById('closeModalBtn').onclick = function() {
+            modal.style.display = 'none';
+        };
+        // Close modal on outside click
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) modal.style.display = 'none';
+        });
+        </script>
+        <script>
+            // Logout button logic
+            document.getElementById('logoutBtn').onclick = function() {
+                localStorage.removeItem('token');
+                localStorage.removeItem('role');
+                window.location.href = 'login-signup.html';
+            };
+        </script>
+</body>
+</html>

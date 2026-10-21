@@ -1,0 +1,223 @@
+ROLE:
+You are a senior frontend engineer specializing in mobile-first eCommerce UIs.
+Your job is to COMPLETELY REBUILD the MOBILE frontend of my website so that it looks
+PIXEL-PERFECT and IDENTICAL to the 6 reference images provided.
+
+SCOPE:
+- Mobile only (max-width: 768px)
+- Desktop & tablet MUST remain unchanged
+- Existing mobile CSS/JS must be fully removed
+- Rebuild from zero using clean, modern code
+
+CRITICAL NON-NEGOTIABLE RULES:
+1. Do NOT approximate layouts.
+2. Do NOT change spacing, colors, font sizes, or alignment.
+3. If something looks centered in the image, it must be centered in code.
+4. If spacing looks large/small in image, match it visually.
+5. Section order MUST follow image order strictly (1 → 6).
+6. Final result must be visually indistinguishable from the images.
+
+────────────────────────────────
+GLOBAL MOBILE STYLES (EXAMPLE)
+────────────────────────────────
+Use a mobile-first approach.
+
+Example base structure (guidance only):
+
+HTML:
+<section class="mobile-section">
+  <div class="container">
+    <!-- content -->
+  </div>
+</section>
+
+CSS:
+@media (max-width: 768px) {
+  .container {
+    width: 100%;
+    padding: 16px;
+  }
+
+  .mobile-section {
+    margin-bottom: 48px;
+  }
+}
+
+Typography example (match visually, adjust as needed):
+h1 { font-size: 26px; font-weight: 700; }
+h2 { font-size: 22px; font-weight: 600; }
+p  { font-size: 15px; line-height: 1.6; }
+
+────────────────────────────────
+IMAGE 1 – HEADER + HERO SLIDER
+────────────────────────────────
+Structure must follow this hierarchy:
+
+HTML (pattern example):
+<header class="mobile-header">
+  <img class="logo" />
+  <div class="header-icons">
+    <button class="icon-btn wishlist"></button>
+    <button class="icon-btn cart"></button>
+  </div>
+</header>
+
+<section class="hero-slider">
+  <div class="slide active">
+    <img />
+    <span class="badge">New Design</span>
+  </div>
+  <div class="dots"></div>
+</section>
+
+CSS behavior:
+- Header height ≈ image height
+- Icons aligned right, logo left
+- Hero image full-width
+- “New Design” overlay positioned EXACTLY as image
+- Rounded slider edges if visible
+- Dots centered under slider
+
+JS guidance:
+- Touch swipe enabled
+- Active dot syncs with slide
+
+────────────────────────────────
+IMAGE 2 – BROWSE RANGE + PRODUCTS
+────────────────────────────────
+Browse cards:
+- Horizontal scroll
+- Rounded corners
+- Image top, text below
+
+HTML pattern:
+<div class="horizontal-scroll">
+  <div class="range-card">
+    <img />
+    <h3>Dining</h3>
+    <p>Description</p>
+    <button>Explore Dining</button>
+  </div>
+</div>
+
+Product grid:
+- 1 or 2 cards per row depending on width
+- Card structure MUST be consistent
+
+HTML pattern:
+<div class="product-card">
+  <div class="image-wrap">
+    <img />
+    <button class="wishlist"></button>
+  </div>
+  <h4>Product Name</h4>
+  <p>Description</p>
+  <div class="actions">
+    <button class="buy">BUY</button>
+    <button class="cart">Add to cart</button>
+  </div>
+  <span class="tag">Bedroom</span>
+</div>
+
+CSS guidance:
+- BUY button filled gold
+- Add to cart outlined
+- Rounded 12–16px corners
+- Soft shadow (as per image)
+
+────────────────────────────────
+IMAGE 3 – MORE PRODUCTS + CTA
+────────────────────────────────
+- Same card design as Image 2
+- Wishlist heart icon overlay
+- “More” button centered horizontally
+
+CSS example:
+.more-btn {
+  margin: 32px auto 0;
+  display: block;
+  padding: 12px 32px;
+  border-radius: 24px;
+}
+
+────────────────────────────────
+IMAGE 4 – INNER PEACE + SLIDER
+────────────────────────────────
+Text first, then CTA, then slider.
+
+HTML pattern:
+<section class="inspiration">
+  <h2>Inner peace</h2>
+  <p>Text content...</p>
+  <button class="primary-btn">Explore More</button>
+
+  <div class="image-slider">
+    <button class="nav left"></button>
+    <button class="nav right"></button>
+  </div>
+
+  <p class="hashtag">Share your setup with #VishwakarmaFurniture</p>
+</section>
+
+CSS guidance:
+- Slider container has large rounded corners
+- Arrows inside bottom-right area
+- Divider line after section
+
+────────────────────────────────
+IMAGE 5 – FOOTER SOCIAL + PAYMENTS
+────────────────────────────────
+Layout:
+- Vertical stacking
+- Clear section separation
+
+HTML pattern:
+<footer class="mobile-footer">
+  <h4>Follow Us On</h4>
+  <img class="social-icon" />
+
+  <h4>Payment Mathods</h4>
+  <div class="payments">
+    <img />
+    <img />
+  </div>
+
+  <hr />
+  <p class="copyright">
+    Copyright 2026 Vishwakarma Furniture. All rights reserved
+  </p>
+</footer>
+
+────────────────────────────────
+IMAGE 6 – ABOUT & CONTACT
+────────────────────────────────
+- Clean typography
+- Icons aligned left of text
+- Generous spacing
+
+HTML pattern:
+<section class="about">
+  <h3>About Vishwakarma Furniture</h3>
+  <p>Full paragraph text...</p>
+
+  <div class="contact-item">
+    <span class="icon phone"></span>
+    <div>
+      <strong>99834559678</strong>
+      <p>Availability text...</p>
+    </div>
+  </div>
+</section>
+
+────────────────────────────────
+FINAL VALIDATION CHECKLIST:
+- Compare every section side-by-side with images
+- No visual mismatch allowed
+- Mobile scroll feels smooth
+- No horizontal overflow
+- Buttons are thumb-friendly
+- Code is clean and modular
+
+FINAL GOAL:
+If someone overlays the reference images on top of the mobile website,
+they should visually align almost perfectly.

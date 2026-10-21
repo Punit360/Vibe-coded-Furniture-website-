@@ -1,0 +1,4376 @@
+<script>
+  // ===== MOBILE PRODUCT BUTTONS: Make BUY and Add to cart work like PC =====
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.innerWidth <= 768) {
+      // BUY button opens modal
+      document.querySelectorAll('.buy, .buy-btn, .btn-primary').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          document.getElementById('orderModal').classList.add('show');
+        });
+      });
+      // Add to cart button
+      document.querySelectorAll('.cart, .add-to-cart, .btn-outline').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          // Simulate add to cart (you can add your cart logic here)
+          alert('Added to cart!');
+        });
+      });
+    }
+  });
+  // Internet connectivity check
+  if (!navigator.onLine) {
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:22px;color:#c62828;background:#fff;">No internet connection. Please check your connection and reload the page.</div>';
+    throw new Error('No internet connection');
+  }
+  window.addEventListener('offline', function () {
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:22px;color:#c62828;background:#fff;">No internet connection. Please check your connection and reload the page.</div>';
+  });
+</script>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Funiro — Furniture & Home Decor</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="home css.css" />
+
+  <style>
+    :root {
+      --accent: #c28b4e;
+      --text: #222;
+      --muted: #666;
+      --line: #eaeaea;
+      --bg: #f8f8f8;
+      --white: #fff;
+      --danger: #c62828;
+      --success: #2e7d32;
+      --gold: #c9983a;
+    }
+
+    /* ===== MODAL STYLES ===== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      z-index: 1001;
+    }
+
+    .modal * {
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif
+    }
+
+    .modal .card {
+      width: 900px;
+      background: #fff;
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .modal .container {
+      display: flex;
+      gap: 30px;
+    }
+
+    .modal .left,
+    .modal .right {
+      flex: 1
+    }
+
+    .modal .product-img {
+      width: 100%;
+      height: 260px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #777;
+    }
+
+    .modal .upload-box {
+      border: 2px dashed #999;
+      border-radius: 12px;
+      margin-top: 15px;
+      padding: 20px;
+      text-align: center;
+      background: #f2f2f2;
+    }
+
+    .modal .upload-box button {
+      margin-top: 10px;
+      padding: 8px 20px;
+      border: none;
+      border-radius: 20px;
+      background: #ccc;
+      cursor: pointer;
+    }
+
+    .modal .preview-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .modal .preview {
+      width: 50px;
+      height: 50px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f9f9f9;
+      font-size: 12px;
+      color: #777;
+    }
+
+    .modal .preview img {
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+    }
+
+    .modal .right h3 {
+      margin: 0
+    }
+
+    .modal .dotted {
+      border-bottom: 2px dotted #000;
+      margin: 10px 0
+    }
+
+    .modal .field {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #eee;
+      padding: 6px 10px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+
+    .modal .stepper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .modal .stepper button {
+      width: 22px;
+      height: 22px;
+      border: 1px solid #aaa;
+      background: #fff;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+
+    .modal .link-box {
+      margin-top: 15px;
+    }
+
+    .modal .link-box input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-top: 8px;
+    }
+
+    .modal .whatsapp {
+      margin-top: 15px;
+    }
+
+    .modal .whatsapp button {
+      width: 100%;
+      padding: 10px;
+      background: #25D366;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    /* ===== HIDE DESKTOP ON MOBILE ===== */
+    @media (max-width: 768px) {
+      .mobile-products {
+        padding: 16px;
+      }
+
+      .product-scroll-row {
+        display: flex;
+        gap: 14px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 20px;
+      }
+
+      .product-scroll-row::-webkit-scrollbar {
+        display: none;
+      }
+
+      .product-scroll-row .product-card {
+        min-width: 290px;
+        max-width: 90vw;
+        background: #fff;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid #eee;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        scroll-snap-align: start;
+        margin-bottom: 12px;
+      }
+
+      .product-media {
+        position: relative;
+        width: 100%;
+        height: 180px;
+        background: #eee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      .product-media img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .like-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+        color: #b88e2f;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        z-index: 2;
+      }
+
+      .product-body {
+        padding: 18px 16px 10px 16px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+      }
+
+      .product-name {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        color: #181818;
+        text-align: left;
+      }
+
+      .product-desc {
+        font-size: 15px;
+        color: #444;
+        margin-bottom: 14px;
+        text-align: left;
+        line-height: 1.5;
+      }
+
+      .card-actions {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 0;
+      }
+
+      .btn-primary,
+      .buy-btn {
+        background: #b88e2f;
+        color: #fff;
+        padding: 8px 0;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 600;
+        flex: 1;
+        font-size: 16px;
+        box-shadow: 0 1px 4px rgba(184, 142, 47, 0.08);
+        transition: background 0.2s;
+      }
+
+      .btn-primary:active,
+      .buy-btn:active {
+        background: #a67c1d;
+      }
+
+      .btn-outline,
+      .add-to-cart {
+        background: #fff;
+        border: 1.5px solid #b88e2f;
+        color: #b88e2f;
+        padding: 8px 0;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 600;
+        flex: 1;
+        font-size: 16px;
+        transition: background 0.2s, color 0.2s;
+      }
+
+      .btn-outline:active,
+      .add-to-cart:active {
+        background: #b88e2f;
+        color: #fff;
+      }
+
+      .pill {
+        background: #f5f5f5;
+        color: #b88e2f;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 500;
+        margin-left: 8px;
+        align-self: center;
+      }
+
+      .product-tag-label {
+        text-align: right;
+        margin-top: 12px;
+      }
+
+      .product-tag-label span {
+        background: #f5f5f5;
+        color: #b88e2f;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+
+    }
+
+    body {
+      background: #fff !important;
+    }
+
+    /* Hide desktop header (the one with background-image style) */
+    header[style*="background-image"] {
+      display: none !important;
+      visibility: hidden !important;
+    }
+
+    /* Hide desktop footer */
+    footer.section {
+      display: none !important;
+      visibility: hidden !important;
+    }
+
+    @media (max-width: 768px) {
+
+      /* Hide desktop products */
+      .desktop-products {
+        display: none !important;
+      }
+
+      .mobile-products {
+        padding: 16px;
+      }
+
+      .product-scroll-row {
+        display: flex;
+        gap: 14px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 20px;
+      }
+
+      .product-scroll-row::-webkit-scrollbar {
+        display: none;
+      }
+
+      .product-card {
+        min-width: 260px;
+        max-width: 90vw;
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+        border: 1px solid #eee;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 8px;
+        scroll-snap-align: start;
+        position: relative;
+      }
+
+      .product-img {
+        width: 100%;
+        height: 160px;
+        background: #eee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      .product-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 0;
+      }
+
+      .product-info {
+        padding: 16px 14px 12px 14px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+      }
+
+      .product-info h4 {
+        font-size: 19px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        color: #181818;
+        text-align: left;
+      }
+
+      .product-info p {
+        font-size: 15px;
+        color: #444;
+        margin-bottom: 14px;
+        text-align: left;
+        line-height: 1.5;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+
+      .buy {
+        background: #b88e2f;
+        color: #fff;
+        padding: 8px 0;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 600;
+        flex: 1;
+        font-size: 16px;
+        box-shadow: 0 1px 4px rgba(184, 142, 47, 0.08);
+        transition: background 0.2s;
+      }
+
+      .buy:active {
+        background: #a67c1d;
+      }
+
+      .cart {
+        background: #fff;
+        border: 1.5px solid #b88e2f;
+        color: #b88e2f;
+        padding: 8px 0;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 600;
+        flex: 1;
+        font-size: 16px;
+        transition: background 0.2s, color 0.2s;
+      }
+
+      .cart:active {
+        background: #b88e2f;
+        color: #fff;
+      }
+
+      .product-tag-label {
+        position: absolute;
+        right: 14px;
+        bottom: 14px;
+        background: #f5f5f5;
+        color: #b88e2f;
+        font-size: 15px;
+        font-weight: 500;
+        padding: 4px 16px;
+        border-radius: 18px;
+        box-shadow: 0 1px 4px rgba(184, 142, 47, 0.08);
+        border: none;
+        pointer-events: none;
+      }
+
+      .product-scroll-row {
+        gap: 18px;
+        padding-bottom: 8px;
+      }
+
+      .mobile-products {
+        display: block;
+      }
+    }
+
+    /* ===== SHOW DESKTOP ON DESKTOP VIEW ===== */
+    @media (min-width: 769px) {
+
+      /* Hide mobile header (first header without background-image) */
+      body>header:not([style*="background-image"]) {
+        display: none !important;
+        visibility: hidden !important;
+      }
+
+      #pcMoreBtnWrap {
+        display: flex !important;
+        justify-content: center;
+        margin-top: 20px;
+      }
+
+      /* Hide mobile footer */
+      footer:not(.section) {
+        display: none !important;
+        visibility: hidden !important;
+      }
+
+      /* Hide mobile sections */
+      .hero,
+      .peace,
+      .about,
+      .contact-item,
+      .tabs,
+      .icon-filters,
+      .dot,
+      section:not(#home):not(#about):not(#range):not(#shop):not(.section) {
+        display: none !important;
+        visibility: hidden !important;
+      }
+
+      /* Show desktop sections */
+      #home,
+      #about,
+      #range,
+      #shop,
+      .inspiration,
+      footer.section,
+      #pcMoreBtnWrap {
+        display: block !important;
+        visibility: visible !important;
+      }
+
+      #pcMoreBtnWrap {
+        display: flex !important;
+        justify-content: center;
+        text-align: center;
+        margin: 26px 0;
+      }
+
+      /* Show desktop header */
+      header[style*="background-image"] {
+        display: block !important;
+        visibility: visible !important;
+      }
+    }
+
+    /* ===== MOBILE STYLES (MAX-WIDTH 768PX) ===== */
+    @media (max-width: 768px) {
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0
+      }
+
+      body {
+        background: #fff !important
+      }
+
+      /* Explicitly show mobile elements */
+      body>header:first-of-type,
+      .hero,
+      section,
+      .peace,
+      .about,
+      .contact-item,
+      footer {
+        display: block !important;
+        visibility: visible !important;
+      }
+
+      /* ===== MOBILE HEADER ===== */
+      body>header:first-of-type {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #fff url('./assets/logo/header-bg.jpg') center/cover no-repeat;
+        border-bottom: 1px solid #e5e5e5;
+        padding: 12px 16px;
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 64px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0px
+      }
+
+      .brand-logo {
+        width: 50px;
+        height: 50px
+      }
+
+      .brand-divider {
+        width: 2px;
+        height: 36px;
+        background: #000;
+        margin: 0 10px;
+      }
+
+      .brand-text {
+        font-weight: 600;
+        line-height: 1.1;
+        color: var(--gold);
+        font-size: 16px;
+        margin-left: 0;
+      }
+
+      .brand-text span {
+        display: block;
+        font-size: 12px;
+        color: var(--gold)
+      }
+
+      /* Make mobile BUY and Add to cart buttons work like PC */
+      .buy,
+      .buy-btn,
+      .btn-primary {
+        /* already styled above, just ensure pointer */
+        cursor: pointer;
+      }
+
+      .cart,
+      .add-to-cart,
+      .btn-outline {
+        cursor: pointer;
+      }
+
+      .icons {
+        display: flex;
+        gap: 10px
+      }
+
+      .icon {
+        width: 30px;
+        height: 30px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center
+      }
+
+      /* ===== HERO ===== */
+      .hero {
+        padding: 16px
+      }
+
+      .hero-wrap {
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+        display: flex;
+        align-items: center
+      }
+
+      .hero-track {
+        display: flex;
+        width: 100%;
+        transition: transform 0.8s ease-in-out
+      }
+
+      .hero-img {
+        min-width: 100%;
+        height: 240px;
+        background: #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center
+      }
+
+      .hero-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover
+      }
+
+      .hero-text {
+        position: absolute;
+        right: 16px;
+        bottom: 16px;
+        font-size: 34px;
+        font-weight: 600;
+        color: var(--gold);
+        line-height: 1;
+        z-index: 5
+      }
+
+      .hero-nav {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 50%;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 10px;
+        z-index: 20
+      }
+
+      .hero-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #fff;
+        border: 1px solid #ddd;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 18px;
+        font-family: inherit;
+        transition: all 0.3s
+      }
+
+      .hero-btn:active {
+        background: var(--gold);
+        color: #fff;
+        border-color: var(--gold)
+      }
+
+      .hero-dots {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        margin-top: 10px;
+        padding: 0 16px
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #ddd;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.3s ease-in-out;
+        font-family: inherit
+      }
+
+      .dot.active {
+        background: var(--gold);
+        width: 20px;
+        border-radius: 4px;
+        animation: dotPulse 0.3s ease-in-out
+      }
+
+      /* ===== MOBILE MODAL OVERRIDE ===== */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal .card {
+        width: 95vw;
+        max-width: 500px;
+        padding: 15px;
+        border-radius: 12px;
+      }
+
+      .modal .container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .modal .left,
+      .modal .right {
+        flex: 1;
+      }
+
+      .modal .product-img {
+        height: 200px;
+      }
+
+      .modal .header {
+        margin-bottom: 10px;
+      }
+
+      /* ===== SECTIONS ===== */
+      section {
+        padding: 28px 16px
+      }
+
+      h2 {
+        text-align: center;
+        font-size: 26px;
+        font-weight: 700;
+        margin-bottom: 20px
+      }
+
+      /* ===== BROWSE RANGE ===== */
+      .scroll-row {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        padding-bottom: 6px
+      }
+
+      .scroll-row::-webkit-scrollbar {
+        display: none
+      }
+
+      .range-card {
+        min-width: 85%;
+        background: #fff;
+        border-radius: 20px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column
+      }
+
+      .range-img {
+        height: 140px;
+        flex-shrink: 0;
+        overflow: hidden
+      }
+
+      .range-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover
+      }
+
+      .range-content {
+        text-align: center;
+        padding: 16px;
+        flex: 1;
+        display: flex;
+        flex-direction: column
+      }
+
+      .range-content h3 {
+        font-size: 18px;
+        margin-bottom: 6px
+      }
+
+      .range-content p {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 12px;
+        flex: 1
+      }
+
+      .btn {
+        background: var(--gold);
+        color: #fff;
+        padding: 10px 22px;
+        border-radius: 22px;
+        font-size: 14px;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 600;
+        transition: all 0.3s
+      }
+
+      .btn:active {
+        background: #b8752c
+      }
+
+
+
+
+      /* ===== OUR PRODUCTS ===== */
+      .subtitle {
+        text-align: center;
+        color: #666;
+        margin-top: -10px;
+        margin-bottom: 20px;
+        font-size: 14px
+      }
+
+      .tabs {
+        text-align: center;
+        font-size: 17px;
+        font-weight: 500;
+        margin-bottom: 20px
+      }
+
+      .tabs span {
+        margin: 0 10px;
+        padding-bottom: 6px;
+        cursor: pointer;
+        transition: all 0.3s
+      }
+
+      .tabs span.active {
+        border-bottom: 3px solid var(--gold);
+        color: var(--gold)
+      }
+
+      .icon-filters {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        text-align: center;
+        margin-bottom: 24px;
+        padding: 0 3px
+      }
+
+      .icon-box {
+        font-size: 13px;
+        cursor: pointer
+      }
+
+      .icon-img {
+        width: 58px;
+        height: 44px;
+        margin: 5px
+      }
+
+      .icon-box.active span {
+        border-bottom: 2px solid var(--gold);
+        color: var(--gold);
+        padding-bottom: 4px;
+        display: block
+      }
+
+      /* GLOBAL PC STYLES FOR INNER PEACE (Hidden on mobile via media query) */
+      section.peace-pc {
+        display: grid !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        grid-template-columns: 1fr 1.1fr;
+        column-gap: 28px;
+        align-items: center;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 60px 20px !important;
+        background: linear-gradient(180deg, #fff 0%, #faf7f0 100%) !important;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        position: relative;
+      }
+
+      .peace-pc h2 {
+        grid-column: 1 / 2;
+        grid-row: 1;
+        margin: 0 0 8px !important;
+        font-size: 30px !important;
+        text-align: left !important;
+      }
+
+      .peace-pc p:nth-of-type(1) {
+        grid-column: 1 / 2;
+        grid-row: 2;
+        margin: 0 0 16px !important;
+        font-size: 16px !important;
+        color: var(--muted) !important;
+        line-height: 1.6;
+      }
+
+      .peace-pc .btn {
+        grid-column: 1 / 2;
+        grid-row: 3;
+        width: fit-content;
+        background: #c9983a !important;
+        /* Gold color */
+        color: #fff !important;
+        border: none;
+        padding: 12px 24px;
+        font-size: 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-top: 8px;
+      }
+
+      /* Place slider in right column */
+      .peace-pc .peace-slider {
+        grid-column: 2 / 3;
+        grid-row: 1 / 4;
+        width: 100%;
+        height: 480px !important;
+        /* Taller for desktop */
+        margin: 0 !important;
+        border-radius: 16px;
+      }
+
+      /* Ensure inner track fills height */
+      .peace-pc .peace-track {
+        height: 100%;
+      }
+
+      .peace-pc .peace-slide {
+        height: 100%;
+      }
+
+      /* Share text at bottom */
+      .peace-pc p:last-child {
+        grid-column: 1 / -1;
+        grid-row: 4;
+        margin-top: 24px;
+        text-align: center;
+      }
+
+      .peace-pc .peace-nav {
+        right: 20px;
+        bottom: 20px;
+      }
+
+      .peace-pc .peace-nav button {
+        width: 40px;
+        height: 40px;
+        background: rgba(0, 0, 0, 0.5);
+        border: none;
+        color: #fff;
+      }
+
+      .peace-pc .peace-nav button:hover {
+        background: var(--accent);
+      }
+
+      .product-card {
+        min-width: 85%;
+        background: #fff;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid #eee
+      }
+
+      .product-img {
+        height: 220px;
+        background: #eee
+      }
+
+      .product-info {
+        padding: 16px
+      }
+
+      .product-info h4 {
+        font-size: 18px;
+        margin-bottom: 6px
+      }
+
+      .product-info p {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 12px
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px
+      }
+
+      .buy {
+        background: var(--gold);
+        height: 40px;
+        color: #fff;
+        padding: 8px 20px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        flex: 1;
+        font-weight: 600
+      }
+
+      .buy:active {
+        background: #b8752c
+      }
+
+      .cart {
+        background: #fff;
+        border: 1px solid var(--gold);
+        color: var(--gold);
+        padding: 8px 18px;
+        margin-bottom: 40px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-family: inherit;
+        flex: 1;
+        font-weight: 600
+      }
+
+      .cart:active {
+        background: var(--gold);
+        color: #fff
+      }
+
+      .center {
+        text-align: center;
+        margin: 26px 0
+      }
+
+      /* ===== INNER PEACE ===== */
+      .peace {
+        background: #faf6ef;
+        padding: 28px 16px !important
+      }
+
+      .peace h2 {
+        text-align: left;
+        font-size: 30px;
+        margin-bottom: 14px;
+        padding: 0
+      }
+
+      .peace p {
+        font-size: 18px;
+        line-height: 1.6;
+        margin-bottom: 18px
+      }
+
+      .peace-slider {
+        height: 350px;
+        border-radius: 24px;
+        position: relative;
+        margin: 20px 0;
+        overflow: hidden;
+        background: #eee
+      }
+
+      .peace-track {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.8s ease-in-out
+      }
+
+      .peace-slide {
+        min-width: 100%;
+        height: 100%;
+        background: #eee;
+        display: flex;
+        align-items: center;
+        justify-content: center
+      }
+
+      .peace-slide img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover
+      }
+
+      .peace-nav {
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        display: flex;
+        gap: 8px;
+        z-index: 10
+      }
+
+      .peace-nav button {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #fff;
+        border: 1px solid #ddd;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 16px;
+        font-family: inherit;
+        transition: all 0.3s
+      }
+
+      .peace-nav button:active {
+        background: var(--gold);
+        color: #fff;
+        border-color: var(--gold)
+      }
+
+      @keyframes dotPulse {
+        from {
+          transform: scale(1)
+        }
+
+        to {
+          transform: scale(1.2)
+        }
+      }
+
+      /* ===== ABOUT ===== */
+      .about {
+        padding: 28px 16px
+      }
+
+      .about h3 {
+        font-size: 22px;
+        margin-bottom: 6px
+      }
+
+      .about h2 {
+        text-align: left;
+        font-size: 26px;
+        margin: 12px 0;
+        font-weight: 700
+      }
+
+      .about p {
+        font-size: 18px;
+        line-height: 1.7;
+        color: #333
+      }
+
+      /* ===== CONTACT ===== */
+      .contact-item {
+        margin-bottom: 22px;
+        font-size: 18px;
+        line-height: 1.6
+      }
+
+      /* ===== FOOTER ===== */
+      footer {
+        border-top: 1px solid #e5e5e5;
+        padding: 30px 16px
+      }
+
+      footer h4 {
+        font-size: 22px;
+        margin-bottom: 10px;
+        font-weight: 600
+      }
+
+      .pay-row {
+        display: flex;
+        gap: 14px;
+        margin: 10px 0
+      }
+
+      .hr {
+        height: 1px;
+        background: #000;
+        margin: 20px 0
+      }
+
+      .copy {
+        font-size: 16px;
+        color: #666
+      }
+    }
+
+    /* ===== HIDE MOBILE ON DESKTOP ===== */
+    @media (min-width: 769px) {
+
+      /* Hide mobile-specific elements */
+      body>header:not([style*="background-image"]),
+      .hero,
+      .scroll-row,
+      .about,
+      .contact-item,
+      .tabs,
+      .icon-filters,
+      .dot {
+        display: none !important;
+      }
+
+      /* Show desktop sections */
+      #home,
+      #about,
+      #range,
+      #shop,
+      .inspiration,
+      footer {
+        display: block !important;
+      }
+
+
+      /* Unified Inner Peace Section - Desktop Grid Layout moved to global scope */
+      section.peace-pc {
+        display: grid !important;
+        grid-template-columns: 1fr 1.1fr;
+        column-gap: 28px;
+        align-items: center;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 60px 20px !important;
+        background: linear-gradient(180deg, #fff 0%, #faf7f0 100%) !important;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        position: relative;
+      }
+
+      /* Place text content in left column */
+      .peace-pc h2 {
+        grid-column: 1 / 2;
+        grid-row: 1;
+        margin: 0 0 8px !important;
+        font-size: 30px !important;
+        text-align: left !important;
+      }
+
+      .peace-pc p:nth-of-type(1) {
+        grid-column: 1 / 2;
+        grid-row: 2;
+        margin: 0 0 16px !important;
+        font-size: 16px !important;
+        color: var(--muted) !important;
+        line-height: 1.6;
+      }
+
+      .peace-pc .btn {
+        grid-column: 1 / 2;
+        grid-row: 3;
+        width: fit-content;
+        background: var(--accent) !important;
+      }
+
+      /* Place slider in right column */
+      .peace-pc .peace-slider {
+        grid-column: 2 / 3;
+        grid-row: 1 / 4;
+        width: 100%;
+        height: 480px !important;
+        /* Taller for desktop */
+        margin: 0 !important;
+        border-radius: 16px;
+      }
+
+      /* Ensure inner track fills height */
+      .peace-pc .peace-track {
+        height: 100%;
+      }
+
+      .peace-pc .peace-slide {
+        height: 100%;
+      }
+
+      /* Share text at bottom */
+      .peace-pc p:last-child {
+        grid-column: 1 / -1;
+        grid-row: 4;
+        margin-top: 24px;
+        text-align: center;
+      }
+
+      /* Enhance slider navigation for desktop */
+      .peace-nav {
+        right: 20px;
+        bottom: 20px;
+      }
+
+      .peace-nav button {
+        width: 40px;
+        height: 40px;
+        background: rgba(0, 0, 0, 0.5);
+        border: none;
+        color: #fff;
+      }
+
+      .peace-nav button:hover {
+        background: var(--accent);
+      }
+    }
+
+    /* ===== HIDE MOBILE ON DESKTOP ===== */
+    @media (min-width: 769px) {
+
+      /* Hide mobile-specific elements */
+      body>header:not([style*="background-image"]),
+      .hero,
+      .scroll-row,
+      .about,
+      .contact-item,
+      .tabs,
+      .icon-filters,
+      .dot {
+        display: none !important;
+      }
+
+      /* Show desktop sections */
+      #home,
+      #about,
+      #range,
+      #shop,
+      .inspiration,
+      footer {
+        display: block !important;
+      }
+
+      /* Show desktop header (the one with background-image) */
+      header[style*="background-image"] {
+        display: block !important;
+      }
+
+      .peace-mobile {
+        display: none !important;
+      }
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="inside-brand">
+        <img src="./assets/logo/2nd%20logo%20export.svg" alt="Logo" class="brand-logo">
+      </div>
+      <div class="brand-divider"></div>
+      <div class="brand-text">Ganga<span>Furniture</span></div>
+    </div>
+    </div>
+    <div class="icons">
+      <div class="icon"><img
+          src="file:///c%3A/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/icons/A%20heart-shaped%20like%20.png"
+          height="20px" width="20px">
+      </div>
+      <div class="icon"><img
+          src="file:///c%3A/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/icons/2D%20shopping%20cart%20ico.png"
+          height="20px" width="20px">
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-wrap">
+      <div class="hero-track">
+        <div class="hero-img"><img
+            src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/footage%20images/ChatGPT%20Image%20Jan%2029,%202026,%2005_58_47%20PM.png"
+            alt="Hero Image 1"></div>
+        <div class="hero-img"><img
+            src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/footage%20images/ChatGPT%20Image%20Jan%2029,%202026,%2006_02_47%20PM.png"
+            alt="Hero Image 2"></div>
+        <div class="hero-img"><img
+            src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/footage%20images/Serene%20bedroom%20with%20wooden%20accents.png"
+            alt="Hero Image 3"></div>
+        <div class="hero-img"><img
+            src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/footage%20images/ChatGPT%20Image%20Jan%2029,%202026,%2006_07_04%20PM.png"
+            alt="Hero Image 4"></div>
+        <div class="hero-img"><img
+            src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/footage%20images/Living%20relaxed%20space.png"
+            alt="Hero Image 5"></div>
+      </div>
+      <div class="hero-text">New<br>Design</div>
+      <div class="hero-nav">
+        <button class="hero-btn">‹</button>
+        <button class="hero-btn">›</button>
+      </div>
+    </div>
+    <div class="hero-dots">
+      <div class="dot active"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </section>
+
+
+  <section class="peace peace-mobile">
+    <h2>Inner peace</h2>
+    <p>Our designer already made a lot of beautiful prototype rooms to inspire you.</p>
+    <button class="btn">Explore More</button>
+    <div class="peace-slider">
+      <div class="peace-track">
+        <div class="peace-slide"><img
+            src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/footage%20images/584675583_17844080256616898_2946774469016347109_n.heic.jpg"
+            alt="Room 1"></div>
+        <div class="peace-slide"><img
+            src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/footage%20images/600406280_17847902856616898_3237392112432684321_n.heic.jpg"
+            alt="Room 2"></div>
+        <div class="peace-slide"><img
+            src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/footage%20images/619216097_17852175606616898_9103162654421830620_n.heic.jpg"
+            alt="Room 3"></div>
+        <div class="peace-slide"><img
+            src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/footage%20images/620341479_17852603703616898_3598391654118183521_n.heic.jpg"
+            alt="Room 4"></div>
+        <div class="peace-slide"><img
+            src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/footage%20images/Screenshot_20260129_185839_Video%20Player.jpg"
+            alt="Room 5"></div>
+      </div>
+      <div class="peace-nav"><button class="hero-btn">‹</button><button class="hero-btn">›</button>
+      </div>
+    </div>
+    <p style="text-align:center">Share your setup with #GangaFurniture</p>
+  </section>
+
+  <section class="about">
+    <h3>About</h3>
+    <h2>Ganga Furniture</h2>
+    <p>We are a leading manufacturer of high-quality wooden furniture, specializing in custom designs and traditional
+      craftsmanship. Our products are made from premium solid wood, ensuring durability and elegance for your home. With
+      years of experience, we provide personalized services to meet your unique needs, from bedroom sets to outdoor
+      furniture.</p>
+  </section>
+
+  <section>
+    <div class="contact-item"><img
+        src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/icons/ChatGPT%20Image%20Jan%2027,%202026,%2002_21_52%20AM.png"
+        height="40" width="27"> 99834559678<br><small>You can call 7 days a week (Monday-Saturday). you can also chat
+        with us by clicking whatsapp button.</small></div>
+    <div class="contact-item"><img
+        src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/icons/ChatGPT%20Image%20Jan%2027,%202026,%2002_24_45%20AM.png"
+        height="40" width="40"> GangaFurniture@gmail.com<br>400 University Drive Suite 200 Coral Gables, FL 33134
+      USA</div>
+  </section>
+
+  <section class="section inspiration animate" id="inspiration-pc" style="background:#fcf8f3;padding:44px 0;">
+    <div class="container insp-wrap" style="display:grid;grid-template-columns:1fr 1.5fr;gap:42px;align-items:center;">
+      <div class="insp-left">
+        <h3 class="insp-title" style="font-size:40px;line-height:1.2;margin-bottom:8px;">Inner Peace</h3>
+        <p class="insp-sub" style="color:#616161;font-weight:500;margin-bottom:24px;">Our designer already made a lot of
+          beautiful prototype rooms to inspire you.</p>
+        <button class="btn-primary">Explore More</button>
+      </div>
+      <div class="insp-right">
+        <!-- Reusing the PC slider logic structure but inside inspiration container -->
+        <div class="peace-slider"
+          style="width:100%;height:480px;position:relative;background:#eee;border-radius:4px;overflow:hidden;">
+          <div class="peace-track" style="display:flex;height:100%;transition:transform 0.5s ease-in-out;">
+            <div class="peace-slide" style="min-width:100%;height:100%;"><img
+                src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/footage%20images/584675583_17844080256616898_2946774469016347109_n.heic.jpg"
+                style="width:100%;height:100%;object-fit:cover;"></div>
+            <div class="peace-slide" style="min-width:100%;height:100%;"><img
+                src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/footage%20images/600406280_17847902856616898_3237392112432684321_n.heic.jpg"
+                style="width:100%;height:100%;object-fit:cover;"></div>
+            <div class="peace-slide" style="min-width:100%;height:100%;"><img
+                src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/footage%20images/619216097_17852175606616898_9103162654421830620_n.heic.jpg"
+                style="width:100%;height:100%;object-fit:cover;"></div>
+            <div class="peace-slide" style="min-width:100%;height:100%;"><img
+                src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/footage%20images/620341479_17852603703616898_3598391654118183521_n.heic.jpg"
+                style="width:100%;height:100%;object-fit:cover;"></div>
+            <div class="peace-slide" style="min-width:100%;height:100%;"><img
+                src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/footage%20images/Screenshot_20260129_185839_Video%20Player.jpg"
+                style="width:100%;height:100%;object-fit:cover;"></div>
+          </div>
+          <div class="peace-nav" style="position:absolute;bottom:24px;right:24px;display:flex;gap:8px;">
+            <button class="hero-btn"
+              style="width:48px;height:48px;border-radius:50%;background:rgba(232,159,113,0.5);color:#fff;border:none;cursor:pointer;">‹</button>
+            <button class="hero-btn"
+              style="width:48px;height:48px;border-radius:50%;background:#e89f71;color:#fff;border:none;cursor:pointer;">›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <h4>Follow Us On</h4>
+    <div class="icon-img" style="width:40px"><a
+        href="https://www.instagram.com/vishwakarma._.furniture.08?igsh=ZHNkYjgyNGJ1dnVu"><img
+          src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/icons/ChatGPT%20Image%20Jan%2027,%202026,%2002_34_47%20AM.png"></a>
+    </div>
+    <h4 style="margin-top:16px">Payment Methods</h4>
+    <div class="pay-row">
+      <div class="icon-img" style="width:60px"><img
+          src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/icons/GPay_Acceptance_Mark_800.png">
+      </div>
+      <div class="icon-img" style="width:60px"><img
+          src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/icons/Paytm-Logo.PNG">
+      </div>
+    </div>
+    <div class="hr"></div>
+    <div class="copy">Copyright 2026 Ganga Furniture. All rights reserved</div>
+  </footer>
+
+  <script>
+    // ===== MOBILE HERO CAROUSEL =====
+    let heroCurrentSlide = 0;
+    const heroTrack = document.querySelector('.hero-track');
+    const heroDots = document.querySelectorAll('.hero-dots .dot');
+    const heroButtons = document.querySelectorAll('.hero-nav .hero-btn');
+    const heroTotal = 5;
+
+    function updateHeroCarousel() {
+      if (heroTrack) {
+        heroTrack.style.transform = `translateX(-${heroCurrentSlide * 100}%)`;
+      }
+      heroDots.forEach((dot, idx) => {
+        dot.classList.toggle('active', idx === heroCurrentSlide);
+      });
+    }
+
+    // Hero buttons
+    heroButtons.forEach((btn, idx) => {
+      btn.addEventListener('click', () => {
+        heroCurrentSlide = idx === 0 ? (heroCurrentSlide - 1 + heroTotal) % heroTotal : (heroCurrentSlide + 1) % heroTotal;
+        updateHeroCarousel();
+      });
+    });
+
+    // Hero dots click
+    heroDots.forEach((dot, idx) => {
+      dot.addEventListener('click', () => {
+        heroCurrentSlide = idx;
+        updateHeroCarousel();
+      });
+    });
+
+    // Hero auto-advance
+    let heroInterval = setInterval(() => {
+      heroCurrentSlide = (heroCurrentSlide + 1) % heroTotal;
+      updateHeroCarousel();
+    }, 4000);
+
+    // Reset interval on manual interaction
+    [...heroButtons, ...heroDots].forEach(el => {
+      el.addEventListener('click', () => {
+        clearInterval(heroInterval);
+        heroInterval = setInterval(() => {
+          heroCurrentSlide = (heroCurrentSlide + 1) % heroTotal;
+          updateHeroCarousel();
+        }, 4000);
+      });
+    });
+
+    // Mobile Implementation
+    let peaceCurrentSlide = 0;
+    const peaceTrack = document.querySelector('.peace-mobile .peace-track');
+    const peaceButtons = document.querySelectorAll('.peace-mobile .peace-nav button');
+    const peaceSlides = document.querySelectorAll('.peace-mobile .peace-slide');
+    const peaceTotal = peaceSlides.length;
+
+    function updatePeaceSlide() {
+      if (peaceTrack) {
+        peaceTrack.style.transform = `translateX(-${peaceCurrentSlide * 100}%)`;
+      }
+    }
+
+    if (peaceButtons.length > 0) {
+      peaceButtons.forEach((btn, idx) => {
+        btn.addEventListener('click', () => {
+          // Check if it's prev (0) or next (1) button
+          // The HTML has 2 buttons in .peace-nav. First is prev, second is next.
+          // Note: The previous code assumed index 0 is prev ? No, let's check legacy code.
+          // Legacy code: idx === 0 ? (back) : (forward).
+          // But wait, are there always exactly 2 buttons? Yes in HTML: <button>‹</button><button>›</button>
+          if (idx === 0) {
+            peaceCurrentSlide = (peaceCurrentSlide - 1 + peaceTotal) % peaceTotal;
+          } else {
+            peaceCurrentSlide = (peaceCurrentSlide + 1) % peaceTotal;
+          }
+          updatePeaceSlide();
+        });
+      });
+    }
+
+    // Peace auto-advance
+    let peaceInterval = setInterval(() => {
+      peaceCurrentSlide = (peaceCurrentSlide + 1) % peaceTotal;
+      updatePeaceSlide();
+    }, 5000);
+
+    // Reset on button click
+    if (peaceButtons.length > 0) {
+      peaceButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          clearInterval(peaceInterval);
+          peaceInterval = setInterval(() => {
+            peaceCurrentSlide = (peaceCurrentSlide + 1) % peaceTotal;
+            updatePeaceSlide();
+          }, 5000);
+        });
+      });
+    }
+
+    // PC Implementation (Updated selector to match new inspiration structure)
+    (function () {
+      let pcCurrentSlide = 0;
+      const pcTrack = document.querySelector('#inspiration-pc .peace-track');
+      const pcButtons = document.querySelectorAll('#inspiration-pc .peace-nav button');
+      const pcSlides = document.querySelectorAll('#inspiration-pc .peace-slide');
+      const pcTotal = pcSlides.length;
+
+      function updatePcSlide() {
+        if (pcTrack) {
+          pcTrack.style.transform = `translateX(-${pcCurrentSlide * 100}%)`;
+        }
+      }
+
+      if (pcButtons.length > 0) {
+        pcButtons.forEach((btn, idx) => {
+          btn.addEventListener('click', () => {
+            if (idx === 0) {
+              pcCurrentSlide = (pcCurrentSlide - 1 + pcTotal) % pcTotal;
+            } else {
+              pcCurrentSlide = (pcCurrentSlide + 1) % pcTotal;
+            }
+            updatePcSlide();
+          });
+        });
+      }
+
+      // PC Auto-advance
+      let pcInterval = setInterval(() => {
+        pcCurrentSlide = (pcCurrentSlide + 1) % pcTotal;
+        updatePcSlide();
+      }, 5000);
+
+      if (pcButtons.length > 0) {
+        pcButtons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            clearInterval(pcInterval);
+            pcInterval = setInterval(() => {
+              pcCurrentSlide = (pcCurrentSlide + 1) % pcTotal;
+              updatePcSlide();
+            }, 5000);
+          });
+        });
+      }
+    })();
+
+
+
+
+
+    // ===== RANGE CAROUSEL SWIPE =====
+    const scrollRows = document.querySelectorAll('.scroll-row');
+    scrollRows.forEach(scrollRow => {
+      let startX = 0;
+      scrollRow.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+      });
+      scrollRow.addEventListener('touchend', (e) => {
+        const endX = e.changedTouches[0].clientX;
+        const diff = startX - endX;
+        if (Math.abs(diff) > 50) {
+          scrollRow.scrollBy({
+            left: diff > 0 ? 200 : -200,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+
+    // Filter buttons
+    document.querySelectorAll('.tabs span').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tabs span').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+
+    // Category filter buttons
+    document.querySelectorAll('.icon-box').forEach(box => {
+      box.addEventListener('click', () => {
+        document.querySelectorAll('.icon-box').forEach(b => b.classList.remove('active'));
+        box.classList.add('active');
+      });
+    });
+
+
+    // ===== LOGIN CHECKS FOR ALL INTERACTIVE BUTTONS (MOBILE & PC) =====
+    function enforceLoginOnButtons(container) {
+      const likeBtns = container.querySelectorAll('.like-btn');
+      const buyBtns = container.querySelectorAll('.buy-btn');
+      const cartBtns = container.querySelectorAll('.add-to-cart');
+      likeBtns.forEach(btn => {
+        btn.onclick = (e) => {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            window.location.href = 'login-signup.html';
+            return false;
+          }
+          // Like logic (toggle like, update tray)
+          btn.classList.toggle('liked');
+          // ...update liked tray logic here...
+        };
+      });
+      buyBtns.forEach(btn => {
+        btn.onclick = (e) => {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            window.location.href = 'login-signup.html';
+            return false;
+          }
+          // Show custom order form/modal
+          alert('Opening order form...');
+        };
+      });
+      cartBtns.forEach(btn => {
+        btn.onclick = (e) => {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            window.location.href = 'login-signup.html';
+            return false;
+          }
+          // Add to cart logic (toggle/add, update tray)
+          btn.textContent = btn.textContent === 'Add to cart' ? 'Added!' : 'Add to cart';
+          // ...update cart tray logic here...
+        };
+      });
+    }
+
+    // Helper: simple mobile check
+    function isMobile() {
+      return window.innerWidth <= 768;
+    }
+
+    // Enforce login on all product cards (PC and mobile) - safe guards for missing mobile helpers
+    function enforceLoginAllProductCards() {
+      // PC/desktop
+      document.querySelectorAll('.products-grid .product-card').forEach(card => enforceLoginOnButtons(card));
+
+      // Mobile rows (dynamically rendered) - fallback to productsGrid when mobile-specific rows aren't present
+      if (isMobile()) {
+        try {
+          if (typeof mobileProductRows !== 'undefined' && mobileProductRows) {
+            mobileProductRows.querySelectorAll('.product-card').forEach(card => enforceLoginOnButtons(card));
+          } else {
+            // fallback: use products grid as scroll row
+            const fallback = document.getElementById('productsGrid');
+            if (fallback) fallback.querySelectorAll('.product-card').forEach(card => enforceLoginOnButtons(card));
+          }
+        } catch (e) {
+          // ignore errors to avoid stopping other scripts
+          console.warn('enforceLoginAllProductCards fallback error', e);
+        }
+      }
+    }
+
+    // Call after rendering mobile rows - only wrap if existing function present
+    if (typeof renderMobileRows === 'function') {
+      const origRenderMobileRows = renderMobileRows;
+      renderMobileRows = function () {
+        origRenderMobileRows();
+        enforceLoginAllProductCards();
+      };
+    } else {
+      // Provide a safe fallback so other code can call renderMobileRows
+      window.renderMobileRows = function () {
+        // Ensure products grid behaves as a scroll-row on mobile
+        const grid = document.getElementById('productsGrid');
+        if (isMobile() && grid) {
+          grid.classList.add('product-scroll-row');
+          grid.style.display = 'flex';
+          grid.style.overflowX = 'auto';
+        }
+        enforceLoginAllProductCards();
+      };
+    }
+
+    // Initial enforce
+    enforceLoginAllProductCards();
+    // ===== HEADER LIKE/CART TRAYS (MOBILE PARITY) =====
+    // (Assume PC logic is correct, just ensure mobile header buttons open trays and update content)
+    function updateTrayVisibility() {
+      if (!isMobile()) {
+        document.getElementById('likedTray').style.right = '30px';
+        document.getElementById('cartTray').style.right = '370px';
+      } else {
+        document.getElementById('likedTray').style.right = '20px';
+        document.getElementById('cartTray').style.right = '70px';
+      }
+    }
+    window.addEventListener('resize', updateTrayVisibility);
+    updateTrayVisibility();
+
+    // WhatsApp/modal logic is already shared, so no change needed for mobile
+
+    // Inner peace carousel
+    let peaceIndex = 0;
+    document.querySelectorAll('.peace-nav button').forEach((btn, idx) => {
+      btn.addEventListener('click', () => {
+        peaceIndex = idx === 0 ? (peaceIndex - 1 + 3) % 3 : (peaceIndex + 1) % 3;
+        const peaceSlider = document.querySelector('.peace-slider');
+        if (peaceSlider) {
+          peaceSlider.style.backgroundImage = `url('https://images.unsplash.com/photo-${1600000000 + peaceIndex}?q=80&w=1000')`;
+        }
+      });
+    });
+  </script>
+
+
+
+  <!-- Header -->
+  <header
+    style="background-image: url('./assets/haeder%20background%20image.svg'); background-size: cover; background-position: center;">
+    <div class="container header-wrap">
+      <div class="brand">
+        <img src="./assets/logo/2nd%20logo%20export.svg" alt="" class="brand-logo" />
+        Ganga Furniture
+      </div>
+      <nav aria-label="Primary">
+        <div class="nav-links">
+          <!-- Navigation links removed as requested -->
+        </div>
+      </nav>
+      <button class="hamburger" id="hamburger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="header-actions">
+        <!-- Liked Products Tray -->
+        <div id="likedTray"
+          style="display:none;position:fixed;top:70px;right:30px;z-index:1000;background:var(--white,#fff);box-shadow:0 4px 24px rgba(0,0,0,0.13);border-radius:14px;padding:18px 16px 12px 16px;min-width:220px;max-width:320px;max-height:70vh;overflow-y:auto;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <span style="font-weight:600;font-size:17px;">Liked Products</span>
+            <button id="closeLikedTray"
+              style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button>
+          </div>
+          <div id="likedCardsList" style="display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
+        <!-- Removed account button -->
+        <!-- Wishlist button remains unchanged -->
+        <button class="icon-btn" aria-label="Wishlist" id="wishlistHeaderBtn">
+          <img src="./assets/icons/3D%20heart%20shape%20.png" alt="Wishlist"
+            style="width:24px;height:24px;object-fit:contain;" />
+        </button>
+        <!-- Cart icon replaced with 2D shopping cart image -->
+        <!-- Cart Products Tray -->
+        <div id="cartTray"
+          style="display:none;position:fixed;top:70px;right:370px;z-index:1000;background:var(--white,#fff);box-shadow:0 4px 24px rgba(0,0,0,0.13);border-radius:14px;padding:18px 16px 12px 16px;min-width:220px;max-width:340px;max-height:70vh;overflow-y:auto;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <span style="font-weight:600;font-size:17px;">Cart Products</span>
+            <button id="closeCartTray"
+              style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button>
+          </div>
+          <div id="cartCardsList" style="display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
+        <button class="icon-btn" aria-label="Cart" id="cartHeaderBtn">
+          <img src="./assets/icons/2D%20shopping%20cart%20ico.png" alt="Cart"
+            style="width:24px;height:24px;object-fit:contain;" />
+        </button>
+        <!-- Login button moved to last, wider, uppercase -->
+        <button class="icon-btn" id="loginLogoutBtn"
+          style="font-weight:600;width:80px;min-width:80px;font-size:15px;letter-spacing:1px;"></button>
+      </div>
+    </div>
+    <div class="nav-mobile" id="navMobile">
+      <div class="nav-links">
+        <a href="#home" class="mobile-link">Home</a>
+        <a href="#shop" class="mobile-link">Shop</a>
+        <a href="#about" class="mobile-link">About</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero: New Arrival -->
+  <section id="home" class="hero section animate">
+    <div class="container hero-wrap">
+      <div class="hero-left">
+        <div class="hero-room" role="img" aria-label="Styled living room scene">
+          <video autoplay loop muted playsinline>
+            <source src="./assets/footer%20vedio/furniture%20tour%20vid.mp4" type="video/mp4">
+            <!-- Video fallback to background image is automatic -->
+          </video>
+        </div>
+      </div>
+      <div class="hero-right">
+        <span class="badge">New Arrival</span>
+        <h1 class="hero-title">Discover Our New Collection</h1>
+        <p class="hero-desc">Explore new design and styles or get a custom design.</p>
+        <div class="flex">
+          <button class="btn-primary" id="buyNowBtn">BUY NOW</button>
+          <!-- Removed Browse The Range button -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about" class="section animate" style="background-color: #f5f5f5; padding: 40px 0;">
+    <div class="container">
+      <div class="about-wrap" style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center">
+        <div class="about-left">
+          <h2>About Ganga Furniture</h2>
+          <p>We are a leading manufacturer of high-quality wooden furniture, specializing in custom designs and
+            traditional craftsmanship. Our products are made from premium solid wood, ensuring durability and elegance
+            for your home.</p>
+          <p>With years of experience, we provide personalized services to meet your unique needs, from bedroom sets to
+            outdoor furniture.</p>
+        </div>
+        <div class="about-right" style="justify-self: end;">
+          <img src="./assets/icons/allustrator%20image.png" alt="Solid Wood Wardrobe"
+            style="max-width:400px;width:100%;height:auto;border-radius:16px;" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+
+  <!-- Browse The Range -->
+  <section id="range" class="section animate">
+    <div class="container">
+      <h2 class="section-title centered" style="margin-bottom:40px;">Browse The Range</h2>
+      <!-- Added inline style for extra space below heading -->
+      <div class="grid range-grid">
+        <!-- Dining -->
+        <article class="range-card">
+          <div class="range-img"
+            style="background-image:url('./assets/footage%20images/Dining%20cozy%20dining%20s.png');background-size:cover;background-position:center">
+          </div>
+          <div class="container" style="padding:16px 16px 18px">
+            <h3 class="range-title centered">Dining</h3>
+            <p class="range-desc centered">Cozy dining setups, natural textures, and warm lighting.</p>
+            <a class="btn-link explore-filter-btn" href="#shop" data-filter-target="dining">Explore dining →</a>
+          </div>
+        </article>
+        <!-- Living -->
+        <article class="range-card">
+          <div class="range-img"
+            style="background-image:url('./assets/footage%20images/Living%20relaxed%20space.png');background-size:cover;background-position:center">
+          </div>
+          <div class="container" style="padding:16px 16px 18px">
+            <h3 class="range-title centered">Living</h3>
+            <p class="range-desc centered">Relaxed spaces with neutral palettes and soft furnishings.</p>
+            <a class="btn-link explore-filter-btn" href="#shop" data-filter-target="living">Explore living →</a>
+          </div>
+        </article>
+        <!-- Bedroom -->
+        <article class="range-card">
+          <div class="range-img"
+            style="background-image:url('./assets/footage%20images/A%20cozy%20bedroom%20fully.png');background-size:cover;background-position:center">
+          </div>
+          <div class="container" style="padding:16px 16px 18px">
+            <h3 class="range-title centered">Bedroom</h3>
+            <p class="range-desc centered">Minimalist corners crafted for calm and comfort.</p>
+            <a class="btn-link explore-filter-btn" href="#shop" data-filter-target="bed">Explore bedroom →</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Our Products -->
+  <section id="shop" class="section animate" aria-label="Our Products">
+    <div class="container">
+      <h2 class="section-title centered">Our Products</h2>
+      <p class="section-sub centered">Handpicked items with new arrivals and special discounts.</p>
+
+      <!-- Filter Buttons -->
+      <div class="products-filters">
+        <button class="filter-btn active" data-filter="furniture" aria-pressed="true"
+          title="Show furniture">Furniture</button>
+        <button class="filter-btn" data-filter="cnc" aria-pressed="false" title="Show CNC">CNC</button>
+      </div>
+
+      <!-- Furniture Section -->
+      <div class="products-section products-furniture">
+        <!-- 6 filter icons row -->
+        <div class="furniture-filters" style="display:flex;justify-content:center;gap:32px;margin-bottom:32px;">
+          <button class="furn-filter-btn" data-furn="bed" title="Bed"
+            style="background:none;border:none;display:flex;flex-direction:column;align-items:center;cursor:pointer;">
+            <img src="./assets/icons/badroom.png" alt="Bed"
+              style="width:60px;height:60px;object-fit:contain;margin-bottom:4px;" />
+            <span style="font-size:14px;">Bedroom</span>
+          </button>
+          <button class="furn-filter-btn" data-furn="outdoor" title="Outdoor"
+            style="background:none;border:none;display:flex;flex-direction:column;align-items:center;cursor:pointer;">
+            <img src="./assets/icons/outdoor.png" alt="Outdoor"
+              style="width:60px;height:60px;object-fit:contain;margin-bottom:4px;" />
+            <span style="font-size:14px;">Outdoor</span>
+          </button>
+          <button class="furn-filter-btn" data-furn="living" title="Living Room"
+            style="background:none;border:none;display:flex;flex-direction:column;align-items:center;cursor:pointer;">
+            <img src="./assets/icons/living%20room.png" alt="Living Room"
+              style="width:60px;height:60px;object-fit:contain;margin-bottom:4px;" />
+            <span style="font-size:14px;">Living Room</span>
+          </button>
+          <button class="furn-filter-btn" data-furn="dining" title="Dining"
+            style="background:none;border:none;display:flex;flex-direction:column;align-items:center;cursor:pointer;">
+            <img src="./assets/icons/dining%20room.png" alt="Dining"
+              style="width:60px;height:60px;object-fit:contain;margin-bottom:4px;" />
+            <span style="font-size:14px;">Dining</span>
+          </button>
+          <button class="furn-filter-btn" data-furn="office" title="Office"
+            style="background:none;border:none;display:flex;flex-direction:column;align-items:center;cursor:pointer;">
+            <img src="./assets/icons/office.png" alt="Office"
+              style="width:60px;height:60px;object-fit:contain;margin-bottom:4px;" />
+            <span style="font-size:14px;">Office</span>
+          </button>
+          <button class="furn-filter-btn" data-furn="storage" title="Storage"
+            style="background:none;border:none;display:flex;flex-direction:column;align-items:center;cursor:pointer;">
+            <img src="./assets/icons/storage.png" alt="Storage"
+              style="width:60px;height:60px;object-fit:contain;margin-bottom:4px;" />
+            <span style="font-size:14px;">Storage</span>
+          </button>
+        </div>
+        <div class="grid products-grid" id="productsGrid">
+          <!-- 2 Leviosa -->
+          <article class="product-card" data-category="furniture" data-tags="bed">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Leviosa chair" src="./assets/footage%20images/modern%20wooden%20bed.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Solid Wood Bed</h3>
+              <p class="product-desc">Clean lines, natural wood finish.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Bedroom</span>
+              </div>
+            </div>
+          </article>
+          <!-- Wardrobe -->
+          <article class="product-card" data-category="furniture" data-tags="bed">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Wardrobe" src="./assets/footage%20images/A%20solid%20wood%20wardrob.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Solid Wood Wardrobe</h3>
+              <p class="product-desc">Spacious wardrobe with hanging and shelf storage.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <!-- Price removed -->
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="solid-wood-bed" data-name="Solid Wood Bed">Add to
+                    cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Bedroom</span>
+              </div>
+            </div>
+          </article>
+          <!-- Closet -->
+          <article class="product-card" data-category="furniture" data-tags="bed">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Modern Closet" src="./assets/footage%20images/A%20modern%20closet%20desi.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Modern Closet</h3>
+              <p class="product-desc">Sliding door closet with mirror and drawers.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <!-- Price removed -->
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="solid-wood-wardrobe"
+                    data-name="Solid Wood Wardrobe">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Bedroom</span>
+              </div>
+            </div>
+          </article>
+          <!-- Dresser -->
+          <article class="product-card" data-category="furniture" data-tags="bed">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Dresser" src="./assets/footage%20images/A%20wooden%20dresser%20in%20.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden Dresser</h3>
+              <p class="product-desc">Classic dresser with multiple drawers for storage.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <!-- Price removed -->
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="modern-closet" data-name="Modern Closet">Add to
+                    cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Bedroom</span>
+              </div>
+            </div>
+          </article>
+          <!-- Nightstand -->
+          <article class="product-card" data-category="furniture" data-tags="bed">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Nightstand" src="./assets/footage%20images/A%20high-resolution%20im.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Nightstand</h3>
+              <p class="product-desc">Compact nightstand with drawer and open shelf.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <!-- Price removed -->
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="wooden-dresser" data-name="Wooden Dresser">Add to
+                    cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Bedroom</span>
+              </div>
+            </div>
+          </article>
+          <!-- Dining Table (NEW CARD) -->
+          <article class="product-card" data-category="furniture" data-tags="dining">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Solid Wood Dining Table" src="./assets/footage%20images/dining%20table.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Solid Wood Dining Table</h3>
+              <p class="product-desc">Spacious table with elegant finish for family meals.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <!-- Price removed -->
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="nightstand" data-name="Nightstand">Add to
+                    cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Dining</span>
+              </div>
+            </div>
+          </article>
+          <!-- Example Outdoor Card -->
+          <article class="product-card" data-category="furniture" data-tags="outdoor">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Outdoor Chair" src="./assets/footage%20images/A%20set%20of%20classic%20woo.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Outdoor Chair</h3>
+              <p class="product-desc">Weather-resistant, perfect for garden.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="solid-wood-dining-table"
+                    data-name="Solid Wood Dining Table">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Outdoor</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Outdoor Card: Benches -->
+          <article class="product-card" data-category="furniture" data-tags="outdoor">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Outdoor Bench" src="./assets/footage%20images/Durable%20wooden%20bench.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Benches</h3>
+              <p class="product-desc">Durable benches for garden or patio.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="outdoor-chair" data-name="Outdoor Chair">Add to
+                    cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Outdoor</span>
+              </div>
+            </div>
+          </article>
+          <!-- Outdoor Card: Swings & Gliders -->
+          <article class="product-card" data-category="furniture" data-tags="outdoor">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Swings & Gliders" src="./assets/footage%20images/Relaxing%20wooden%20swin.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Swings & Gliders</h3>
+              <p class="product-desc">Relaxing swings and gliders for your backyard.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="benches" data-name="Benches">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Outdoor</span>
+              </div>
+            </div>
+          </article>
+          <!-- Outdoor Card: Picnic Tables -->
+          <article class="product-card" data-category="furniture" data-tags="outdoor">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Picnic Table" src="./assets/footage%20images/Modern%20wooden%20picnic.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Picnic Tables</h3>
+              <p class="product-desc">Perfect for outdoor dining and gatherings.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="swings-gliders" data-name="Swings & Gliders">Add to
+                    cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Outdoor</span>
+              </div>
+            </div>
+          </article>
+          <!-- Outdoor Card: Planter Boxes -->
+          <article class="product-card" data-category="furniture" data-tags="outdoor">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Planter Box" src="./assets/footage%20images/Decorative%20wooden%20pl.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Planter Boxes</h3>
+              <p class="product-desc">Decorative planter boxes for your garden.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="picnic-tables" data-name="Picnic Tables">Add to
+                    cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Outdoor</span>
+              </div>
+            </div>
+          </article>
+
+
+          <!-- Living: Wooden Sofa Set -->
+          <article class="product-card" data-category="furniture" data-tags="living">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Sofa Set"
+                src="./assets/footage%20images/ChatGPT%20Image%20Jan%2010,%202026,%2010_21_11%20PM.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden Sofa Set</h3>
+              <p class="product-desc">Comfortable solid wood sofa set.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="planter-boxes" data-name="Planter Boxes">Add to
+                    cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Living</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Living: Wooden Coffee Table -->
+          <article class="product-card" data-category="furniture" data-tags="living">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Coffee Table"
+                src="./assets/footage%20images/ChatGPT%20Image%20Jan%2010,%202026,%2010_24_05%20PM.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden Coffee Table</h3>
+              <p class="product-desc">Minimal solid wood coffee table.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="wooden-sofa-set" data-name="Wooden Sofa Set">Add to
+                    cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Living</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Living: Wooden Side Table -->
+          <article class="product-card" data-category="furniture" data-tags="living">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Side Table"
+                src="./assets/footage%20images/ChatGPT%20Image%20Jan%2010,%202026,%2010_29_28%20PM.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden Side Table</h3>
+              <p class="product-desc">Compact end table with storage.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="wooden-coffee-table"
+                    data-name="Wooden Coffee Table">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Living</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Living: Wooden TV Unit -->
+          <article class="product-card" data-category="furniture" data-tags="living">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden TV Unit"
+                src="./assets/footage%20images/ChatGPT%20Image%20Jan%2010,%202026,%2010_31_32%20PM.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden TV Unit</h3>
+              <p class="product-desc">Entertainment center with drawers.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="wooden-side-table" data-name="Wooden Side Table">Add
+                    to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Living</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Living: Wooden Bookshelf -->
+          <article class="product-card" data-category="furniture" data-tags="living">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Bookshelf"
+                src="./assets/footage%20images/ChatGPT%20Image%20Jan%2010,%202026,%2010_33_25%20PM.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden Bookshelf</h3>
+              <p class="product-desc">Open wooden display shelves.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="wooden-tv-unit" data-name="Wooden TV Unit">Add to
+                    cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Living</span>
+              </div>
+            </div>
+          </article>
+
+
+          <!-- Dining: Dining Chairs -->
+          <article class="product-card" data-category="furniture" data-tags="dining">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Dining Chairs"
+                src="./assets/footage%20images/Gemini_Generated_Image_gtjxmxgtjxmxgtjx.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden Dining Chairs</h3>
+              <p class="product-desc">Comfortable solid wood dining chairs.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="wooden-bookshelf" data-name="Wooden Bookshelf">Add to
+                    cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Dining</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Dining: Wooden Dining Bench -->
+          <article class="product-card" data-category="furniture" data-tags="dining">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Dining Bench"
+                src="./assets/footage%20images/Gemini_Generated_Image_gjdsk4gjdsk4gjds.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden Dining Bench</h3>
+              <p class="product-desc">Sturdy wooden bench for dining.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="wooden-dining-chairs"
+                    data-name="Wooden Dining Chairs">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Dining</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Dining: Sideboard -->
+          <article class="product-card" data-category="furniture" data-tags="dining">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Sideboard" src="./assets/footage%20images/Gemini_Generated_Image_ypozmiypozmiypoz.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden Sideboard</h3>
+              <p class="product-desc">Dining storage with drawers & cabinets.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="wooden-dining-bench"
+                    data-name="Wooden Dining Bench">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Dining</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Dining: Crockery Unit -->
+          <article class="product-card" data-category="furniture" data-tags="dining">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Crockery Unit"
+                src="./assets/footage%20images/Gemini_Generated_Image_8jswcl8jswcl8jsw.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden Crockery Unit</h3>
+              <p class="product-desc">Display & storage for dining essentials.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Dining</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Office: Office Desk -->
+          <article class="product-card" data-category="furniture" data-tags="office">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Office Desk"
+                src="./assets/footage%20images/Gemini_Generated_Image_6j3d236j3d236j3d.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden Office Desk</h3>
+              <p class="product-desc">Spacious desk in solid wood.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="wooden-crockery-unit"
+                    data-name="Wooden Crockery Unit">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Office</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Office: Office Chair -->
+          <article class="product-card" data-category="furniture" data-tags="office">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Office Chair"
+                src="./assets/footage%20images/Gemini_Generated_Image_vdcvi7vdcvi7vdcv.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden Office Chair</h3>
+              <p class="product-desc">Ergonomic wooden chair.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="wooden-office-desk"
+                    data-name="Wooden Office Desk">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Office</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Office: Study Table -->
+          <article class="product-card" data-category="furniture" data-tags="office">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Study Table"
+                src="./assets/footage%20images/Gemini_Generated_Image_7f5ym57f5ym57f5y.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden Study Table</h3>
+              <p class="product-desc">Compact study table in solid wood.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="wooden-office-chair"
+                    data-name="Wooden Office Chair">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Office</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Office: File Cabinet -->
+          <article class="product-card" data-category="furniture" data-tags="office">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden File Cabinet"
+                src="./assets/footage%20images/Gemini_Generated_Image_aj6aldaj6aldaj6a.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden File Cabinet</h3>
+              <p class="product-desc">Office storage with drawers.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart" data-id="wooden-study-table"
+                    data-name="Wooden Study Table">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Office</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Office: Office Bookshelf -->
+          <article class="product-card" data-category="furniture" data-tags="office">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Office Bookshelf"
+                src="./assets/footage%20images/Gemini_Generated_Image_xijegxijegxijegx.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden Office Bookshelf</h3>
+              <p class="product-desc">Bookshelf for files & books.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Office</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Example Storage Card -->
+          <article class="product-card" data-category="furniture" data-tags="storage">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Storage" src="./assets/footage%20images/Spacious%20wooden%20stor.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden Storage</h3>
+              <p class="product-desc">Spacious storage for kids room.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <!-- Price removed -->
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Storage</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Storage: Storage Cabinet -->
+          <article class="product-card" data-category="furniture" data-tags="storage">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Storage Cabinet"
+                src="./assets/footage%20images/ChatGPT%20Image%20Jan%2010,%202026,%2011_19_03%20PM.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden Storage Cabinet</h3>
+              <p class="product-desc">Multi-purpose wooden storage unit.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Storage</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Storage: Shoe Rack -->
+          <article class="product-card" data-category="furniture" data-tags="storage">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Shoe Rack"
+                src="./assets/footage%20images/ChatGPT%20Image%20Jan%2010,%202026,%2011_21_42%20PM.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden Shoe Rack</h3>
+              <p class="product-desc">Compact wooden shoe organizer.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Storage</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Storage: Chest of Drawers -->
+          <article class="product-card" data-category="furniture" data-tags="storage">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Chest of Drawers"
+                src="./assets/footage%20images/Gemini_Generated_Image_2aq16w2aq16w2aq1.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Chest of Drawers</h3>
+              <p class="product-desc">Drawer storage in solid wood.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Storage</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Storage: Wooden Almirah -->
+          <article class="product-card" data-category="furniture" data-tags="storage">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Almirah"
+                src="./assets/footage%20images/ChatGPT%20Image%20Jan%2010,%202026,%2011_26_02%20PM.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden Almirah</h3>
+              <p class="product-desc">Large wooden wardrobe storage.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Storage</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Storage: Wall Storage Unit -->
+          <article class="product-card" data-category="furniture" data-tags="storage">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Wall Storage"
+                src="./assets/footage%20images/ChatGPT%20Image%20Jan%2010,%202026,%2011_27_18%20PM.png" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden Wall Storage</h3>
+              <p class="product-desc">Wall-mounted wooden storage unit.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+              <div class="product-tag-label" style="margin-top:12px;text-align:right;">
+                <span
+                  style="background:#f5f5f5;color:#b88e2f;padding:4px 12px;border-radius:999px;font-size:13px;">Storage</span>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+      <!-- CNC Section -->
+      <div class="products-section products-cnc" style="display:none">
+        <div class="grid products-grid">
+          <!-- CNC Carved Wooden Doors -->
+          <article class="product-card" data-category="cnc">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="CNC Carved Wooden Doors"
+                src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">CNC Carved Wooden Doors</h3>
+              <p class="product-desc">Intricately carved doors for homes and offices.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+            </div>
+          </article>
+          <!-- Furniture Components -->
+          <article class="product-card" data-category="cnc">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Furniture Components"
+                src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=800&q=80" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Furniture Components</h3>
+              <p class="product-desc">Precision-cut wooden parts for furniture making.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+            </div>
+          </article>
+          <!-- Decorative Wall Panels -->
+          <article class="product-card" data-category="cnc">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Decorative Wall Panels"
+                src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=800&q=80" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Decorative Wall Panels</h3>
+              <p class="product-desc">Stylish panels for modern interiors.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+            </div>
+          </article>
+          <!-- Wooden Nameplates & Signboards -->
+          <article class="product-card" data-category="cnc">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Nameplates & Signboards"
+                src="https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden Nameplates & Signboards</h3>
+              <p class="product-desc">Customizable nameplates and signboards.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+            </div>
+          </article>
+          <!-- Temple & Religious Carvings -->
+          <article class="product-card" data-category="cnc">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Temple & Religious Carvings"
+                src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=800&q=80" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Temple & Religious Carvings</h3>
+              <p class="product-desc">Sacred and spiritual wooden carvings.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+            </div>
+          </article>
+          <!-- Wooden Screens & Partitions -->
+          <article class="product-card" data-category="cnc">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Wooden Screens & Partitions"
+                src="https://images.unsplash.com/photo-1503389152951-9c3d0c6b7a2d?auto=format&fit=crop&w=800&q=80" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Wooden Screens & Partitions</h3>
+              <p class="product-desc">Elegant room dividers and privacy screens.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+            </div>
+          </article>
+          <!-- Kitchen & Cabinet Doors -->
+          <article class="product-card" data-category="cnc">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Kitchen & Cabinet Doors"
+                src="https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=800&q=80" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Kitchen & Cabinet Doors</h3>
+              <p class="product-desc">Custom doors for kitchens and cabinets.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+            </div>
+          </article>
+          <!-- Custom Wooden Gifts -->
+          <article class="product-card" data-category="cnc">
+            <div class="product-media">
+              <button class="like-btn" aria-label="Like">&#9829;</button>
+              <img alt="Custom Wooden Gifts"
+                src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80" />
+            </div>
+            <div class="product-body">
+              <h3 class="product-name">Custom Wooden Gifts</h3>
+              <p class="product-desc">Personalized wooden gift items for all occasions.</p>
+              <div class="flex" style="align-items:center;justify-content:space-between">
+                <div class="card-actions">
+                  <button class="btn-primary buy-btn">BUY</button>
+                  <button class="btn-outline add-to-cart">Add to cart</button>
+                  <span class="pill">Share</span>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+      <!-- More and Collapse buttons -->
+      <div style="text-align:center;margin-top:32px;">
+        <button class="btn-primary" id="moreProductsBtn" type="button">More</button>
+        <button id="collapseBtn" type="button" class="btn-primary" style="display:none;">&#x25B2; Collapse</button>
+      </div>
+    </div>
+  </section>
+
+
+
+
+  <!-- 50+ Beautiful rooms inspiration -->
+  <section class="section inspiration animate" id="inspiration-pc" style="background:#fcf8f3;padding:44px 0;">
+    <div class="container insp-wrap" style="display:grid;grid-template-columns:1fr 1.5fr;gap:42px;align-items:center;">
+      <div class="insp-left">
+        <h3 class="insp-title" style="font-size:40px;line-height:1.2;margin-bottom:8px;">Inner Peace</h3>
+        <p class="insp-sub" style="color:#616161;font-weight:500;margin-bottom:24px;">Our designer already made a lot of
+          beautiful prototype rooms to inspire you.</p>
+        <button class="btn-primary">Explore More</button>
+      </div>
+      <div class="insp-right">
+        <!-- Reusing the PC slider logic structure but inside inspiration container -->
+        <div class="peace-slider"
+          style="width:100%;height:480px;position:relative;background:#eee;border-radius:4px;overflow:hidden;">
+          <div class="peace-track" style="display:flex;height:100%;transition:transform 0.5s ease-in-out;">
+            <div class="peace-slide" style="min-width:100%;height:100%;"><img
+                src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/footage%20images/584675583_17844080256616898_2946774469016347109_n.heic.jpg"
+                style="width:100%;height:100%;object-fit:cover;"></div>
+            <div class="peace-slide" style="min-width:100%;height:100%;"><img
+                src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/footage%20images/600406280_17847902856616898_3237392112432684321_n.heic.jpg"
+                style="width:100%;height:100%;object-fit:cover;"></div>
+            <div class="peace-slide" style="min-width:100%;height:100%;"><img
+                src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/footage%20images/619216097_17852175606616898_9103162654421830620_n.heic.jpg"
+                style="width:100%;height:100%;object-fit:cover;"></div>
+            <div class="peace-slide" style="min-width:100%;height:100%;"><img
+                src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/footage%20images/620341479_17852603703616898_3598391654118183521_n.heic.jpg"
+                style="width:100%;height:100%;object-fit:cover;"></div>
+            <div class="peace-slide" style="min-width:100%;height:100%;"><img
+                src="file:///C:/Users/AKSHIT%20SINGH%20RATHORE/Downloads/CARPENTER%20WEB%201.0/assets/footage%20images/Screenshot_20260129_185839_Video%20Player.jpg"
+                style="width:100%;height:100%;object-fit:cover;"></div>
+          </div>
+          <div class="peace-nav" style="position:absolute;bottom:24px;right:24px;display:flex;gap:8px;">
+            <button class="hero-btn"
+              style="width:48px;height:48px;border-radius:50%;background:rgba(232,159,113,0.5);color:#fff;border:none;cursor:pointer;">‹</button>
+            <button class="hero-btn"
+              style="width:48px;height:48px;border-radius:50%;background:#e89f71;color:#fff;border:none;cursor:pointer;">›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <footer class="section animate">
+    <div class="container footer-wrap">
+      <div>
+        <div class="brand" style="margin-bottom:8px">
+          <img src="./assets/logo/2nd%20logo%20export.svg" alt="" class="brand-logo" />
+          Funiro.
+        </div>
+        <p class="footer-brand">400 University Drive Suite 200 Coral Gables,<br />FL 33134 USA</p>
+      </div>
+
+
+    </div>
+  </footer>
+
+  <script>
+
+    function logout() {
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      window.location.href = "login-signup.html";
+    }
+    // Add to cart feedback removed as requested
+
+    // Newsletter validation
+    document.getElementById('newsletterForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const note = document.getElementById('newsletterNote');
+      const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      if (!valid) {
+        note.style.color = '#c62828';
+        note.textContent = 'Please enter a valid email address.';
+        return;
+      }
+      note.style.color = '#2e7d32';
+      note.textContent = 'Thanks for subscribing! Check your inbox for a confirmation.';
+      this.reset();
+    });
+
+    // Hamburger mobile menu
+    const hamburger = document.getElementById('hamburger');
+    const navMobile = document.getElementById('navMobile');
+    hamburger.addEventListener('click', function () {
+      navMobile.classList.toggle('open');
+      document.body.style.overflow = navMobile.classList.contains('open') ? 'hidden' : '';
+      // Animate hamburger icon
+      hamburger.classList.toggle('active');
+      if (hamburger.classList.contains('active')) {
+        hamburger.children[0].style.transform = 'rotate(45deg) translateY(8px)';
+        hamburger.children[1].style.opacity = '0';
+        hamburger.children[2].style.transform = 'rotate(-45deg) translateY(-8px)';
+      } else {
+        hamburger.children[0].style.transform = '';
+        hamburger.children[1].style.opacity = '';
+        hamburger.children[2].style.transform = '';
+      }
+    });
+    // Close mobile nav on link click
+    document.querySelectorAll('.mobile-link').forEach(function (link) {
+      link.addEventListener('click', function () {
+        navMobile.classList.remove('open');
+        hamburger.classList.remove('active');
+        document.body.style.overflow = '';
+        hamburger.children[0].style.transform = '';
+        hamburger.children[1].style.opacity = '';
+        hamburger.children[2].style.transform = '';
+      });
+    });
+
+    // Header shadow on scroll
+    window.addEventListener('scroll', function () {
+      const header = document.querySelector('header');
+      if (window.scrollY > 10) header.classList.add('scrolled');
+      else header.classList.remove('scrolled');
+    });
+
+    // Smooth scroll for anchor links (for browsers that don't support scroll-behavior)
+    document.querySelectorAll('a[href^="#"]').forEach(function (link) {
+      link.addEventListener('click', function (e) {
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+
+    // Animate on scroll (entrance animation)
+    function animateOnScroll() {
+      document.querySelectorAll('.animate').forEach(function (el) {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight - 60) {
+          el.classList.add('visible');
+        }
+      });
+    }
+    window.addEventListener('scroll', animateOnScroll);
+    window.addEventListener('resize', animateOnScroll);
+    window.addEventListener('DOMContentLoaded', animateOnScroll);
+
+    // Like button toggle
+    document.querySelectorAll('.like-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var token = localStorage.getItem('token');
+        if (!token) {
+          window.location.href = 'login-signup.html';
+          return;
+        }
+        btn.classList.toggle('liked');
+        btn.setAttribute('aria-pressed', btn.classList.contains('liked') ? 'true' : 'false');
+      });
+    });
+    // Buy button login check
+    document.querySelectorAll('.buy-btn').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        var token = localStorage.getItem('token');
+        if (!token) {
+          window.location.href = 'login-signup.html';
+          e.preventDefault();
+          return;
+        }
+        // Place your buy logic here if needed
+      });
+    });
+
+    // Ensure Add to cart appears before Share
+    (function () {
+      document.querySelectorAll('.pill.favorite').forEach(function (el) {
+        el.remove();
+      });
+      document.querySelectorAll('.card-actions').forEach(function (actions) {
+        const addBtn = actions.querySelector('.add-to-cart');
+        const firstPill = actions.querySelector('.pill');
+        if (addBtn) {
+          if (firstPill && firstPill !== addBtn) {
+            actions.insertBefore(addBtn, firstPill);
+          } else {
+            actions.prepend(addBtn);
+          }
+        }
+      });
+    })();
+
+    // Product filter logic (Furniture/CNC sections)
+    (function () {
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      const furnitureSection = document.querySelector('.products-furniture');
+      const cncSection = document.querySelector('.products-cnc');
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
+          filterBtns.forEach(b => {
+            b.classList.remove('active');
+            b.setAttribute('aria-pressed', 'false');
+          });
+          btn.classList.add('active');
+          btn.setAttribute('aria-pressed', 'true');
+          const filter = btn.getAttribute('data-filter');
+          if (filter === 'furniture') {
+            furnitureSection.style.display = '';
+            cncSection.style.display = 'none';
+          } else if (filter === 'cnc') {
+            furnitureSection.style.display = 'none';
+            cncSection.style.display = '';
+          }
+        });
+      });
+    })();
+
+    // Furniture tag filter logic
+    (function () {
+      const filterBtns = document.querySelectorAll('.furn-filter-btn');
+      const cards = document.querySelectorAll('.products-furniture .product-card');
+      let activeTag = null;
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
+          const tag = btn.getAttribute('data-furn');
+          if (activeTag === tag) {
+            // Reset filter
+            activeTag = null;
+            filterBtns.forEach(b => b.classList.remove('active'));
+            cards.forEach(card => card.style.display = '');
+          } else {
+            activeTag = tag;
+            filterBtns.forEach(b => b.classList.toggle('active', b === btn));
+            cards.forEach(card => {
+              const cardTag = card.getAttribute('data-tags');
+              card.style.display = (cardTag === tag) ? '' : 'none';
+            });
+          }
+        });
+      });
+    })();
+
+    // Show only 8 products by default, expand/collapse logic
+    (function () {
+      const grid = document.getElementById('productsGrid');
+      const moreBtn = document.getElementById('moreProductsBtn');
+      const collapseBtn = document.getElementById('collapseBtn');
+      let expandedCount = 8;
+
+      function updateGrid(showCount) {
+        const cards = grid.querySelectorAll('.product-card');
+        cards.forEach((card, idx) => {
+          card.style.display = (idx < showCount) ? '' : 'none';
+        });
+        moreBtn.style.display = (showCount >= cards.length) ? 'none' : '';
+        collapseBtn.style.display = (showCount > 8) ? '' : 'none';
+        collapseBtn.innerHTML = (showCount > 8) ? '&#x25B2;' : '&#x25BC;';
+        collapseBtn.setAttribute('aria-label', (showCount > 8) ? 'Collapse' : 'Expand');
+      }
+
+      function resetGrid() {
+        expandedCount = 8;
+        updateGrid(expandedCount);
+      }
+
+      // Initial state
+      resetGrid();
+
+      moreBtn.addEventListener('click', function () {
+        const cards = grid.querySelectorAll('.product-card');
+        expandedCount = Math.min(expandedCount + 8, cards.length);
+        updateGrid(expandedCount);
+      });
+
+      collapseBtn.addEventListener('click', function () {
+        resetGrid();
+      });
+
+      collapseBtn.style.display = 'none';
+
+      // Hide/show controls with filter logic
+      const furnFilterBtns = document.querySelectorAll('.furn-filter-btn');
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      function isAnyTagFilterActive() {
+        return Array.from(furnFilterBtns).some(btn => btn.classList.contains('active'));
+      }
+      function isCncFilterActive() {
+        return Array.from(filterBtns).some(btn => btn.classList.contains('active') && btn.getAttribute('data-filter') === 'cnc');
+      }
+
+      furnFilterBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
+          setTimeout(() => {
+            if (isAnyTagFilterActive() || isCncFilterActive()) {
+              moreBtn.style.display = 'none';
+              collapseBtn.style.display = 'none';
+            } else {
+              resetGrid();
+            }
+          }, 10);
+        });
+      });
+
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
+          setTimeout(() => {
+            if (isCncFilterActive()) {
+              moreBtn.style.display = 'none';
+              collapseBtn.style.display = 'none';
+            } else if (!isAnyTagFilterActive()) {
+              resetGrid();
+            }
+          }, 10);
+        });
+      });
+    })();
+  </script>
+  <script>
+    // Login/Logout button logic
+    document.addEventListener('DOMContentLoaded', function () {
+      const loginLogoutBtn = document.getElementById('loginLogoutBtn');
+      // Create dropdown for logout
+      let userMenu = document.createElement('div');
+      userMenu.id = 'userMenuDropdown';
+      userMenu.style.display = 'none';
+      userMenu.style.position = 'absolute';
+      userMenu.style.top = '60px';
+      userMenu.style.right = '30px';
+      userMenu.style.background = '#fff';
+      userMenu.style.boxShadow = '0 4px 24px rgba(0,0,0,0.13)';
+      userMenu.style.borderRadius = '10px';
+      userMenu.style.padding = '10px 20px';
+      userMenu.style.zIndex = '2000';
+      userMenu.innerHTML = '<button id="logoutBtnDropdown" style="background:none;border:none;color:#222;font-size:16px;cursor:pointer;width:100%;text-align:left;">Logout</button>';
+      document.body.appendChild(userMenu);
+
+      function getUserEmail() {
+        // For demo, get from localStorage. Replace with real user info if available.
+        return localStorage.getItem('userEmail') || 'user@gmail.com';
+      }
+
+      function updateLoginLogoutBtn() {
+        const token = localStorage.getItem('token');
+        if (token) {
+          // Show user initial in a circle
+          const email = getUserEmail();
+          const initial = email.charAt(0).toUpperCase();
+          loginLogoutBtn.innerHTML = `<span style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;background:#111;color:#fff;font-size:20px;font-weight:600;border:2px solid #111;">${initial}</span>`;
+          loginLogoutBtn.onclick = function (e) {
+            e.stopPropagation();
+            // Toggle dropdown
+            userMenu.style.display = userMenu.style.display === 'block' ? 'none' : 'block';
+          };
+        } else {
+          loginLogoutBtn.innerHTML = 'LOGIN';
+          loginLogoutBtn.onclick = function () {
+            window.location.href = 'login-signup.html';
+          };
+          userMenu.style.display = 'none';
+        }
+      }
+      updateLoginLogoutBtn();
+      window.addEventListener('storage', updateLoginLogoutBtn);
+
+      // Hide dropdown on click outside
+      document.addEventListener('click', function (e) {
+        if (userMenu.style.display === 'block' && !userMenu.contains(e.target) && e.target !== loginLogoutBtn) {
+          userMenu.style.display = 'none';
+        }
+      });
+      // Logout button in dropdown
+      userMenu.addEventListener('click', function (e) {
+        if (e.target && e.target.id === 'logoutBtnDropdown') {
+          localStorage.removeItem('token');
+          localStorage.removeItem('role');
+          localStorage.removeItem('userEmail');
+          userMenu.style.display = 'none';
+          updateLoginLogoutBtn();
+        }
+      });
+
+      // Cart products tray logic
+      const cartTray = document.getElementById('cartTray');
+      const cartCardsList = document.getElementById('cartCardsList');
+      const cartHeaderBtn = document.getElementById('cartHeaderBtn');
+      const closeCartTray = document.getElementById('closeCartTray');
+      let cartProducts = JSON.parse(localStorage.getItem('cartProducts') || '[]');
+
+      function renderCartTray() {
+        cartCardsList.innerHTML = '';
+        if (!cartProducts.length) {
+          cartCardsList.innerHTML = '<div style="color:var(--muted,#888);text-align:center;padding:18px 0;">No products in cart.</div>';
+          return;
+        }
+        cartProducts.forEach(function (prod) {
+          const div = document.createElement('div');
+          div.style.display = 'flex';
+          div.style.alignItems = 'center';
+          div.style.gap = '10px';
+          div.style.background = 'var(--bg-2,#fafafa)';
+          div.style.borderRadius = '8px';
+          div.style.padding = '7px 10px';
+          div.innerHTML = `
+        <img src="${prod.img}" alt="${prod.name}" style="width:44px;height:44px;object-fit:cover;border-radius:7px;border:1px solid #eee;">
+        <div style="flex:1;">
+          <div style="font-weight:500;font-size:15px;">${prod.name}</div>
+          <div style="font-size:12px;color:var(--muted,#888);">${prod.tag}</div>
+        </div>
+        <button class="remove-cart-btn" data-id="${prod.id}" style="background:none;border:none;color:#c62828;font-size:18px;cursor:pointer;">&times;</button>
+      `;
+          cartCardsList.appendChild(div);
+        });
+        // Remove cart product
+        cartCardsList.querySelectorAll('.remove-cart-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            cartProducts = cartProducts.filter(p => p.id !== btn.getAttribute('data-id'));
+            localStorage.setItem('cartProducts', JSON.stringify(cartProducts));
+            renderCartTray();
+            // Also update add-to-cart button state
+            document.querySelectorAll('.add-to-cart').forEach(function (cartBtn) {
+              if ((cartBtn.closest('.product-card')?.getAttribute('data-id') || cartBtn.closest('.product-card')?.querySelector('.product-name')?.textContent?.trim().replace(/\s+/g, '-').toLowerCase()) === btn.getAttribute('data-id')) {
+                cartBtn.textContent = 'Add to cart';
+                cartBtn.classList.remove('added');
+              }
+            });
+          });
+        });
+        // Add single Buy All button if there are products
+        if (cartProducts.length) {
+          const buyAllDiv = document.createElement('div');
+          buyAllDiv.style.textAlign = 'center';
+          buyAllDiv.style.marginTop = '16px';
+          buyAllDiv.innerHTML = '<button class="btn-primary" id="buyAllBtn" style="width:90%;font-size:16px;padding:10px 0;display:block;margin:0 auto;text-align:center;">Buy All</button>';
+          cartCardsList.appendChild(buyAllDiv);
+          document.getElementById('buyAllBtn').addEventListener('click', function () {
+            window.location.href = 'login-signup.html';
+          });
+        }
+      }
+
+      cartHeaderBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        cartTray.style.display = cartTray.style.display === 'none' ? 'block' : 'none';
+        renderCartTray();
+      });
+      closeCartTray.addEventListener('click', function () {
+        cartTray.style.display = 'none';
+      });
+      document.addEventListener('click', function (e) {
+        if (cartTray.style.display === 'block' && !cartTray.contains(e.target) && e.target !== cartHeaderBtn) {
+          cartTray.style.display = 'none';
+        }
+      });
+
+      // Add to cart button logic
+      document.querySelectorAll('.add-to-cart').forEach(function (btn) {
+        const card = btn.closest('.product-card');
+        // Assign a unique id to each card if not present
+        if (card && !card.getAttribute('data-id')) {
+          card.setAttribute('data-id', getProductInfo(card).id);
+        }
+        // Set initial cart state
+        if (card && cartProducts.some(p => p.id === card.getAttribute('data-id'))) {
+          btn.textContent = 'Added in cart';
+          btn.classList.add('added');
+        }
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (!card) return;
+          const prod = getProductInfo(card);
+          const idx = cartProducts.findIndex(p => p.id === prod.id);
+          if (idx === -1) {
+            cartProducts.push(prod);
+            btn.textContent = 'Added in cart';
+            btn.classList.add('added');
+          } else {
+            cartProducts.splice(idx, 1);
+            btn.textContent = 'Add to cart';
+            btn.classList.remove('added');
+          }
+          localStorage.setItem('cartProducts', JSON.stringify(cartProducts));
+          renderCartTray();
+        });
+      });
+      const likedTray = document.getElementById('likedTray');
+      const likedCardsList = document.getElementById('likedCardsList');
+      const wishlistHeaderBtn = document.getElementById('wishlistHeaderBtn');
+      const closeLikedTray = document.getElementById('closeLikedTray');
+      let likedProducts = JSON.parse(localStorage.getItem('likedProducts') || '[]');
+
+      // Helper to get product info from card
+      function getProductInfo(card) {
+        return {
+          name: card.querySelector('.product-name')?.textContent?.trim() || '',
+          img: card.querySelector('.product-media img')?.src || '',
+          tag: card.querySelector('.product-tag-label span')?.textContent?.trim() || '',
+          id: card.getAttribute('data-id') || card.querySelector('.product-name')?.textContent?.trim().replace(/\s+/g, '-').toLowerCase() || Math.random().toString(36).slice(2)
+        };
+      }
+
+      // Render liked tray
+      function renderLikedTray() {
+        likedCardsList.innerHTML = '';
+        if (!likedProducts.length) {
+          likedCardsList.innerHTML = '<div style="color:var(--muted,#888);text-align:center;padding:18px 0;">No liked products yet.</div>';
+          return;
+        }
+        likedProducts.forEach(function (prod) {
+          const div = document.createElement('div');
+          div.style.display = 'flex';
+          div.style.alignItems = 'center';
+          div.style.gap = '10px';
+          div.style.background = 'var(--bg-2,#fafafa)';
+          div.style.borderRadius = '8px';
+          div.style.padding = '7px 10px';
+          div.innerHTML = `
+        <img src="${prod.img}" alt="${prod.name}" style="width:44px;height:44px;object-fit:cover;border-radius:7px;border:1px solid #eee;">
+        <div style="flex:1;">
+          <div style="font-weight:500;font-size:15px;">${prod.name}</div>
+          <div style="font-size:12px;color:var(--muted,#888);">${prod.tag}</div>
+        </div>
+        <button class="remove-liked-btn" data-id="${prod.id}" style="background:none;border:none;color:#c62828;font-size:18px;cursor:pointer;">&times;</button>
+      `;
+          likedCardsList.appendChild(div);
+        });
+        // Remove liked product
+        likedCardsList.querySelectorAll('.remove-liked-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            likedProducts = likedProducts.filter(p => p.id !== btn.getAttribute('data-id'));
+            localStorage.setItem('likedProducts', JSON.stringify(likedProducts));
+            renderLikedTray();
+            // Also update like button state
+            document.querySelectorAll('.like-btn').forEach(function (likeBtn) {
+              if ((likeBtn.closest('.product-card')?.getAttribute('data-id') || likeBtn.closest('.product-card')?.querySelector('.product-name')?.textContent?.trim().replace(/\s+/g, '-').toLowerCase()) === btn.getAttribute('data-id')) {
+                likeBtn.classList.remove('liked');
+              }
+            });
+          });
+        });
+      }
+
+      // Show/hide tray
+      wishlistHeaderBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        likedTray.style.display = likedTray.style.display === 'none' ? 'block' : 'none';
+        renderLikedTray();
+      });
+      closeLikedTray.addEventListener('click', function () {
+        likedTray.style.display = 'none';
+      });
+      document.addEventListener('click', function (e) {
+        if (likedTray.style.display === 'block' && !likedTray.contains(e.target) && e.target !== wishlistHeaderBtn) {
+          likedTray.style.display = 'none';
+        }
+      });
+
+      // Like button logic
+      document.querySelectorAll('.like-btn').forEach(function (btn) {
+        const card = btn.closest('.product-card');
+        // Assign a unique id to each card if not present
+        if (card && !card.getAttribute('data-id')) {
+          card.setAttribute('data-id', getProductInfo(card).id);
+        }
+        // Set initial liked state
+        if (card && likedProducts.some(p => p.id === card.getAttribute('data-id'))) {
+          btn.classList.add('liked');
+        }
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (!card) return;
+          const prod = getProductInfo(card);
+          const idx = likedProducts.findIndex(p => p.id === prod.id);
+          if (idx === -1) {
+            likedProducts.push(prod);
+            btn.classList.add('liked');
+          } else {
+            likedProducts.splice(idx, 1);
+            btn.classList.remove('liked');
+          }
+          localStorage.setItem('likedProducts', JSON.stringify(likedProducts));
+          renderLikedTray();
+        });
+      });
+    });
+  </script>
+
+  <!-- WhatsApp support button -->
+  <style>
+    #whatsapp-float {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 10000
+    }
+
+    #whatsapp-float a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      background: #25D366;
+      border-radius: 50%;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+      text-decoration: none
+    }
+
+    #whatsapp-float img {
+      width: 26px;
+      height: 26px;
+      display: block
+    }
+  </style>
+  <div id="whatsapp-float">
+    <a id="whatsapp-link" href="#" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+      <img src="./assets/icons/A%20generic%20chat%20bubbl.png" alt="WhatsApp" />
+    </a>
+  </div>
+  <script>
+    (function () {
+      var adminPhone = '916375969195';
+      var defaultText = encodeURIComponent('Hi, I need support with my order.');
+      var link = document.getElementById('whatsapp-link');
+      function updateHref() {
+        if (!adminPhone || adminPhone === 'REPLACE_WITH_PHONE') {
+          link.href = 'https://web.whatsapp.com/';
+        } else {
+          link.href = 'https://wa.me/' + adminPhone + '?text=' + defaultText;
+        }
+      }
+      updateHref();
+    })();
+  </script>
+  <style>
+    @media (max-width: 768px) {
+
+      /* Force products grid to act as scroll-row on mobile and keep PC product cards */
+      .products-grid {
+        display: flex !important;
+        overflow-x: auto !important;
+        flex-wrap: nowrap !important;
+        gap: 16px !important;
+        padding: 0 !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+
+      .products-grid::-webkit-scrollbar {
+        display: none;
+      }
+
+      .products-grid .product-card {
+        flex: 0 0 290px !important;
+        min-width: 290px !important;
+        display: block !important;
+        margin: 0 8px !important;
+      }
+
+      /* Ensure More/Collapse buttons remain visible on mobile */
+      #moreProductsBtn,
+      #collapseBtn {
+        display: inline-block !important;
+      }
+
+      /* Mobile: layout for main filter tabs (Furniture | cnc | Haritage) */
+      .products-filters {
+        display: flex;
+        gap: 18px;
+        justify-content: center;
+        align-items: center;
+        margin: 18px 0 8px;
+      }
+
+      .products-filters .filter-btn {
+        background: transparent;
+        border: none;
+        font-size: 28px;
+        padding: 6px 10px;
+        color: var(--text, #222);
+        cursor: pointer;
+        position: relative;
+      }
+
+      .products-filters .filter-btn.active {
+        color: var(--gold, #c9983a);
+      }
+
+      .products-filters .filter-btn.active::after {
+        content: '';
+        position: absolute;
+        left: 10%;
+        right: 10%;
+        height: 4px;
+        background: var(--gold, #c9983a);
+        bottom: -8px;
+        border-radius: 3px;
+      }
+
+      /* Furniture icon filters: first two large, remaining four evenly spaced */
+      .furniture-filters {
+        display: flex !important;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 18px;
+      }
+
+      .furniture-filters .furn-filter-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px 6px;
+        gap: 4px;
+        min-width: 0;
+      }
+
+      /* Make first two filters more prominent (sequence-wise) */
+      .furniture-filters .furn-filter-btn:nth-child(-n+2) {
+        flex: 0 0 48%;
+      }
+
+      /* Remaining filters split equally across the row */
+      .furniture-filters .furn-filter-btn:nth-child(n+3) {
+        flex: 0 0 22%;
+      }
+
+      .furniture-filters img {
+        width: 56px;
+        height: 56px;
+        object-fit: contain;
+      }
+
+      .furniture-filters span {
+        font-size: 13px;
+        color: var(--text, #222);
+      }
+
+      /* Active state underline for icon filters */
+      .furn-filter-btn.active {
+        color: var(--gold, #c9983a);
+      }
+
+      .furn-filter-btn.active::after {
+        content: '';
+        width: 48%;
+        height: 4px;
+        background: var(--gold, #c9983a);
+        display: block;
+        margin-top: 8px;
+        border-radius: 3px;
+        opacity: 1;
+        transform-origin: center;
+      }
+
+      /* Ensure the desktop-specific product layouts don't leak into mobile */
+      header[style*="background-image"] {
+        display: none !important;
+      }
+
+      footer.section {
+        display: none !important;
+      }
+
+      .peace-pc {
+        display: none !important;
+      }
+
+      #inspiration-pc {
+        display: none !important;
+      }
+    }
+  </style>
+
+  <style>
+    @media (min-width: 769px) {
+
+      /* Show underline for active furniture icon on desktop */
+      .furn-filter-btn.active::after {
+        content: '';
+        display: block;
+        width: 36%;
+        height: 4px;
+        background: var(--gold, #c9983a);
+        margin-top: 8px;
+        border-radius: 3px;
+      }
+
+      /* Make main filter tabs show the gold underline on desktop as well */
+      .products-filters .filter-btn.active::after {
+        content: '';
+        position: absolute;
+        left: 10%;
+        right: 10%;
+        height: 4px;
+        background: var(--gold, #c9983a);
+        bottom: -8px;
+        border-radius: 3px;
+      }
+    }
+  </style>
+</body>
+
+<!-- MOBILE-ONLY PRODUCT FILTERING & MORE BUTTON LOGIC -->
+<script>
+  // MOBILE: Show PC product cards inside the scroll-row and ensure More button visibility
+  function showMobileRows() {
+    try {
+      const grid = document.getElementById('productsGrid');
+      if (!grid) return;
+      // remember original shop location so we can restore on desktop
+      if (typeof window._shopOriginalParent === 'undefined') {
+        const shopEl = document.getElementById('shop');
+        if (shopEl) {
+          window._shopOriginalParent = shopEl.parentNode;
+          window._shopOriginalNext = shopEl.nextSibling;
+        }
+      }
+      const more = document.getElementById('moreProductsBtn');
+      const collapse = document.getElementById('collapseBtn');
+
+      if (isMobile()) {
+        // apply scroll-row styles (kept in CSS as well) to ensure cards are visible on mobile
+        grid.classList.add('product-scroll-row');
+        grid.style.display = 'flex';
+        grid.style.overflowX = 'auto';
+        grid.style.flexWrap = 'nowrap';
+        grid.style.gap = '16px';
+        // make sure each PC product card is visible
+        grid.querySelectorAll('.product-card').forEach(card => {
+          card.style.display = 'block';
+          card.style.flex = '0 0 290px';
+          card.style.minWidth = '290px';
+          card.style.maxWidth = '';
+          card.style.margin = '0 8px';
+        });
+        // show More/Collapse controls
+        if (more) more.style.display = '';
+        if (collapse) collapse.style.display = 'none';
+        // move #range then #shop directly after the hero on mobile (order: hero -> range -> shop)
+        try {
+          const shopEl = document.getElementById('shop');
+          const rangeEl = document.getElementById('range');
+          const heroEl = document.querySelector('.hero');
+          if (rangeEl && heroEl && rangeEl !== heroEl.nextSibling) {
+            heroEl.parentNode.insertBefore(rangeEl, heroEl.nextSibling);
+          }
+          if (shopEl && rangeEl && shopEl !== rangeEl.nextSibling) {
+            rangeEl.parentNode.insertBefore(shopEl, rangeEl.nextSibling);
+          } else if (shopEl && heroEl && shopEl !== heroEl.nextSibling) {
+            // fallback: if range not present, place shop after hero
+            heroEl.parentNode.insertBefore(shopEl, heroEl.nextSibling);
+          }
+        } catch (e) {
+          console.warn('move shop/range error', e);
+        }
+      } else {
+        // revert any mobile-specific inline styles when on desktop
+        grid.classList.remove('product-scroll-row');
+        grid.style.display = '';
+        grid.style.overflowX = '';
+        grid.style.flexWrap = '';
+        grid.style.gap = '';
+        grid.querySelectorAll('.product-card').forEach(card => {
+          card.style.display = '';
+          card.style.flex = '';
+          card.style.minWidth = '';
+          card.style.maxWidth = '';
+          card.style.margin = '';
+        });
+        if (more) more.style.display = '';
+        if (collapse) collapse.style.display = 'none';
+        // restore #shop to original location on desktop
+        try {
+          const shopEl = document.getElementById('shop');
+          if (shopEl && window._shopOriginalParent && shopEl.parentNode !== window._shopOriginalParent) {
+            window._shopOriginalParent.insertBefore(shopEl, window._shopOriginalNext || null);
+          }
+        } catch (e) {
+          console.warn('restore shop error', e);
+        }
+      }
+      // Also convert PC "Browse The Range" grid into a mobile scroll-row when on small screens
+      try {
+        const rangeGrid = document.querySelector('#range .range-grid');
+        if (rangeGrid && window.innerWidth <= 768) {
+          rangeGrid.classList.add('scroll-row');
+          rangeGrid.style.display = 'flex';
+          rangeGrid.style.overflowX = 'auto';
+          rangeGrid.style.flexWrap = 'nowrap';
+          rangeGrid.style.gap = '16px';
+          rangeGrid.querySelectorAll('.range-card').forEach(card => {
+            card.style.minWidth = '85%';
+            card.style.maxWidth = '90vw';
+            card.style.marginRight = '12px';
+          });
+        } else if (rangeGrid) {
+          // revert inline styles on larger screens
+          rangeGrid.classList.remove('scroll-row');
+          rangeGrid.style.display = '';
+          rangeGrid.style.overflowX = '';
+          rangeGrid.style.flexWrap = '';
+          rangeGrid.style.gap = '';
+          rangeGrid.querySelectorAll('.range-card').forEach(card => {
+            card.style.minWidth = '';
+            card.style.maxWidth = '';
+            card.style.marginRight = '';
+          });
+        }
+      } catch (e) {
+        console.warn('rangeGrid conversion error', e);
+      }
+    } catch (e) {
+      console.warn('showMobileRows error', e);
+    }
+  }
+
+  // Run on load and on resize to keep grid in scroll mode on mobile
+  document.addEventListener('DOMContentLoaded', showMobileRows);
+  window.addEventListener('resize', showMobileRows);
+</script>
+
+<script>
+  // CART FUNCTIONALITY SCRIPT
+  document.addEventListener('DOMContentLoaded', function () {
+    var cartBtns = document.querySelectorAll('.add-to-cart');
+    cartBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var token = localStorage.getItem('token');
+        if (!token) {
+          window.location.href = 'login-signup.html';
+          return;
+        }
+        var productId = btn.getAttribute('data-id');
+        var name = btn.getAttribute('data-name');
+        fetch('http://localhost:5000/api/cart/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ productId: productId, name: name })
+        }); // No alert, no popup
+      });
+    });
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const exploreBtns = document.querySelectorAll('.explore-filter-btn');
+    const productsSection = document.getElementById('shop');
+
+    // Function to filter products by tag
+    function filterProductsByTag(tag) {
+      // Ensure specific furniture items are shown and CNC hidden if needed
+      // Assuming 'furniture' is the default view.
+
+      const allCards = document.querySelectorAll('.products-furniture .product-card');
+
+      allCards.forEach(card => {
+        const tags = card.getAttribute('data-tags');
+        if (tags && tags.includes(tag)) {
+          card.style.display = 'block';
+          // Also remove 'hide' class if used by other filters
+          card.classList.remove('hide');
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      // Also ensure the furniture section is visible
+      const furnitureSection = document.querySelector('.products-furniture');
+      const cncSection = document.querySelector('.products-cnc');
+      if (furnitureSection) furnitureSection.style.display = '';
+      if (cncSection) cncSection.style.display = 'none';
+
+      // Hide "More" button if filtering
+      const moreBtn = document.getElementById('moreProductsBtn');
+      if (moreBtn) moreBtn.style.display = 'none';
+    }
+
+    exploreBtns.forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetTag = this.getAttribute('data-filter-target');
+
+        // Filter products
+        filterProductsByTag(targetTag);
+
+        // Scroll to shop section
+        productsSection.scrollIntoView({ behavior: 'smooth' });
+        // Activate the correct furniture filter button (underline)
+        const furnFilterBtns = document.querySelectorAll('.furn-filter-btn');
+        furnFilterBtns.forEach(fbtn => {
+          if (fbtn.getAttribute('data-furn') === targetTag) {
+            fbtn.classList.add('active');
+          } else {
+            fbtn.classList.remove('active');
+          }
+        });
+      });
+    });
+
+    // Reset filter when clicking "Furniture" main filter or "Show All" if exists
+    // We hook into existing filter buttons to reset our inline style overrides
+    const mainFilterBtns = document.querySelectorAll('.filter-btn');
+    mainFilterBtns.forEach(btn => {
+      btn.addEventListener('click', function () {
+        // If user clicks Furniture/CNC, we should reset the inline display styles 
+        // on individual cards so the original logic takes over or shows all.
+        const allCards = document.querySelectorAll('.products-furniture .product-card');
+        allCards.forEach(card => {
+          card.style.display = ''; // Clear inline display
+        });
+
+        // Re-show "More" button if needed (or let existing logic handle it)
+        // Existing logic seems to handle pagination/more button.
+        const moreBtn = document.getElementById('moreProductsBtn');
+        if (moreBtn) moreBtn.style.display = '';
+      });
+    });
+
+    // Modal functionality
+    const modal = document.getElementById('orderModal');
+    const closeModalBtn = document.getElementById('closeModal');
+    const buyButtons = document.querySelectorAll('.buy-btn');
+    let attachedFiles = []; // Store File objects for sharing
+
+    buyButtons.forEach(btn => {
+      btn.addEventListener('click', function () {
+        const card = btn.closest('.product-card');
+        const productName = card.querySelector('.product-name').textContent;
+        const productDesc = card.querySelector('.product-desc').textContent;
+        const productImg = card.querySelector('.product-media img').src;
+        const tags = card.getAttribute('data-tags') || '';
+        const modalProductName = modal.querySelector('.right h3');
+        const modalProductDesc = modal.querySelector('.right p');
+        const modalProductImg = modal.querySelector('.product-img img');
+        modalProductName.textContent = productName;
+        modalProductDesc.textContent = productDesc;
+        modalProductImg.src = productImg;
+        modalProductImg.style.display = 'block';
+
+        // Show chairs field if living or dining
+        const chairsField = modal.querySelector('.chairs-field');
+        if (tags.includes('living') || tags.includes('dining')) {
+          chairsField.style.display = 'block';
+        } else {
+          chairsField.style.display = 'none';
+        }
+
+        // Reset values
+        modal.querySelector('.quantity-value').textContent = '1';
+        modal.querySelector('.height-value').textContent = '0';
+        modal.querySelector('.width-value').textContent = '0';
+        modal.querySelector('.chairs-value').textContent = '0';
+        modal.querySelector('.link-input').value = '';
+        modal.querySelector('.attached-links').innerHTML = '';
+        modal.querySelector('.preview-row').innerHTML = '';
+        attachedFiles = [];
+
+        modal.classList.add('show');
+      });
+    });
+
+    closeModalBtn.addEventListener('click', function () {
+      modal.classList.remove('show');
+    });
+
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) {
+        modal.classList.remove('show');
+      }
+    });
+
+    // Stepper functionality
+    modal.addEventListener('click', function (e) {
+      if (e.target.classList.contains('stepper-btn')) {
+        const valueEl = e.target.parentElement.querySelector('.value');
+        let value = parseInt(valueEl.textContent);
+        if (e.target.textContent === '+') {
+          value++;
+        } else if (e.target.textContent === '-' && value > 0) {
+          value--;
+        }
+        valueEl.textContent = value;
+      }
+    });
+
+    // Link confirm
+    const linkConfirmBtn = modal.querySelector('.link-confirm');
+    const linkInput = modal.querySelector('.link-input');
+    const attachedLinks = modal.querySelector('.attached-links');
+
+    linkConfirmBtn.addEventListener('click', function () {
+      const link = linkInput.value.trim();
+      if (link) {
+        const linkDiv = document.createElement('div');
+        linkDiv.className = 'preview';
+        linkDiv.innerHTML = `<span>${link}</span><button class="remove-link" style="background:none;border:none;color:#000;font-size:12px;cursor:pointer;">×</button>`;
+        attachedLinks.appendChild(linkDiv);
+        linkInput.value = '';
+      }
+    });
+
+    attachedLinks.addEventListener('click', function (e) {
+      if (e.target.classList.contains('remove-link')) {
+        e.target.parentElement.remove();
+      }
+    });
+
+    // Image upload
+    const uploadBtn = modal.querySelector('.upload-btn');
+    const fileInput = modal.querySelector('.file-input');
+    const uploadBox = modal.querySelector('.upload-box');
+    const previewRow = modal.querySelector('.preview-row');
+
+    function handleFiles(files) {
+      const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+      imageFiles.forEach(file => {
+        attachedFiles.push(file);
+        const index = attachedFiles.length - 1;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const preview = document.createElement('div');
+          preview.className = 'preview';
+          preview.setAttribute('data-index', index);
+          preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;"><button class="remove-img" style="position:absolute;top:2px;right:2px;background:#000;color:#fff;font-size:12px;border-radius:50%;width:16px;height:16px;text-align:center;line-height:16px;border:none;cursor:pointer;z-index:1;">×</button>`;
+          previewRow.appendChild(preview);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    uploadBtn.addEventListener('click', function () {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', function () {
+      handleFiles(this.files);
+    });
+
+    // Drag and drop
+    uploadBox.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      uploadBox.style.background = '#e0e0e0';
+    });
+
+    uploadBox.addEventListener('dragleave', function () {
+      uploadBox.style.background = '#f2f2f2';
+    });
+
+    uploadBox.addEventListener('drop', function (e) {
+      e.preventDefault();
+      uploadBox.style.background = '#f2f2f2';
+      handleFiles(e.dataTransfer.files);
+    });
+
+    previewRow.addEventListener('click', function (e) {
+      if (e.target.classList.contains('remove-img')) {
+        const preview = e.target.parentElement;
+        const index = parseInt(preview.getAttribute('data-index'));
+        attachedFiles.splice(index, 1);
+        // Update indices for remaining previews
+        const remainingPreviews = previewRow.querySelectorAll('.preview');
+        remainingPreviews.forEach((p, i) => {
+          p.setAttribute('data-index', i);
+        });
+        preview.remove();
+      }
+    });
+
+    // WhatsApp continue
+    const whatsappBtn = modal.querySelector('.whatsapp button');
+    whatsappBtn.addEventListener('click', function () {
+      const productName = modal.querySelector('.right h3').textContent;
+      const quantity = modal.querySelector('.quantity-value').textContent;
+      const height = modal.querySelector('.height-value').textContent;
+      const width = modal.querySelector('.width-value').textContent;
+      const chairs = modal.querySelector('.chairs-value').textContent;
+      const links = Array.from(attachedLinks.querySelectorAll('.preview span')).map(span => span.textContent);
+
+      const userEmail = localStorage.getItem('userEmail') || 'guest@example.com';
+      const userName = userEmail.split('@')[0];
+
+      let message = `Hello, I want to order:\n`;
+      message += `Customer Name: ${userName}\n`;
+      message += `Email: ${userEmail}\n`;
+      message += `Product: ${productName}\n`;
+      message += `Quantity: ${quantity}\n`;
+      if (height !== '0') message += `Height: ${height} CM\n`;
+      if (width !== '0') message += `Width: ${width} CM\n`;
+      if (chairs !== '0') message += `Chairs: ${chairs}\n`;
+      if (links.length) message += `Reference Links: ${links.join(', ')}\n`;
+
+      if (navigator.share && attachedFiles.length > 0) {
+        const shareData = {
+          title: 'Product Order',
+          text: message,
+          files: attachedFiles
+        };
+        navigator.share(shareData).catch(err => {
+          console.error('Share failed:', err);
+          // Fallback to wa.me
+          const phone = '916375969195';
+          const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+          window.open(url, '_blank');
+        });
+      } else {
+        const phone = '916375969195';
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
+      }
+    });
+  });
+</script>
+
+<!-- Modal for Order Form -->
+<div id="orderModal" class="modal-overlay">
+  <div class="modal">
+    <div class="card">
+      <div class="header">
+        <button id="closeModal" style="background:none;border:none;font-size:20px;cursor:pointer;">←</button>
+        <strong>BACK</strong>
+      </div>
+
+      <div class="container">
+        <div class="left">
+          <div class="product-img">
+            <img src="" alt="Product" style="width:100%;height:100%;object-fit:cover;border-radius:10px;display:none;">
+          </div>
+
+          <div class="upload-box">
+            drag your image or click upload
+            <br>
+            <button class="upload-btn">Upload</button>
+            <input type="file" class="file-input" multiple accept="image/*" style="display:none;">
+          </div>
+
+          <div class="preview-row">
+          </div>
+        </div>
+
+        <div class="right">
+          <h3>product name</h3>
+          <p>product detailed text.....</p>
+          <div class="dotted"></div>
+          <div class="dotted"></div>
+
+          <p><strong>Optional</strong></p>
+
+          <div class="field">Quantity(set)
+            <div class="stepper"><button class="stepper-btn">-</button><span
+                class="value quantity-value">1</span><button class="stepper-btn">+</button></div>
+          </div>
+
+          <div class="field">Height CM
+            <div class="stepper"><button class="stepper-btn">-</button><span class="value height-value">0</span><button
+                class="stepper-btn">+</button></div>
+          </div>
+
+          <div class="field">Width CM
+            <div class="stepper"><button class="stepper-btn">-</button><span class="value width-value">0</span><button
+                class="stepper-btn">+</button></div>
+          </div>
+
+          <div class="field chairs-field" style="display:none;">Chairs
+            <div class="stepper"><button class="stepper-btn">-</button><span class="value chairs-value">0</span><button
+                class="stepper-btn">+</button></div>
+          </div>
+
+          <div class="link-box">
+            Paste your reference post/reel/short or any video link
+            <input type="text" class="link-input" placeholder="Enter link .........................">
+            <button class="link-confirm"
+              style="margin-top:5px;padding:5px 10px;border:1px solid #aaa;background:#fff;cursor:pointer;">Confirm</button>
+          </div>
+
+          <div class="attached-links" style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;"></div>
+
+          <div class="whatsapp">
+            <button>Continue with Whatsapp</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Animation Observer: Triggers fade-in for sections with .animate class
+  document.addEventListener('DOMContentLoaded', function () {
+    const observerOptions = {
+      threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.animate').forEach(el => {
+      observer.observe(el);
+    });
+  });
+</script>

@@ -1,0 +1,605 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ganga Furniture</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --gold: #c9983a;
+      --text: #111;
+      --muted: #666;
+      --line: #e5e5e5;
+      --soft: #faf6ef;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      color: var(--text);
+      background: #fff
+    }
+
+    img {
+      width: 100%;
+      display: block
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .brand-logo {
+      width: 42px;
+      height: 42px
+    }
+
+    .brand-divider {
+      width: 2px;
+      height: 36px;
+      background: #000
+    }
+
+    .brand-text {
+      font-weight: 600;
+      line-height: 1.1;
+      color: var(--gold)
+    }
+
+    .brand-text span {
+      display: block;
+      font-size: 12px;
+      color: var(--gold)
+    }
+
+    .icons {
+      display: flex;
+      gap: 10px
+    }
+
+    .icon {
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      padding: 16px
+    }
+
+    .hero-wrap {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden
+    }
+
+    .hero-img {
+      height: 240px;
+      background: #ddd
+    }
+
+    .hero-text {
+      position: absolute;
+      right: 16px;
+      bottom: 16px;
+      font-size: 34px;
+      font-weight: 600;
+      color: var(--gold);
+      line-height: 1
+    }
+
+    .hero-nav {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 10px
+    }
+
+    .hero-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #fff;
+      border: 1px solid var(--line)
+    }
+
+    .hero-dots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 10px
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ddd
+    }
+
+    .dot.active {
+      background: var(--gold)
+    }
+
+    /* ===== SECTIONS ===== */
+    section {
+      padding: 28px 16px
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 20px
+    }
+
+    /* ===== BROWSE RANGE ===== */
+    .scroll-row {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      padding-bottom: 6px
+    }
+
+    .scroll-row::-webkit-scrollbar {
+      display: none
+    }
+
+    .range-card {
+      min-width: 85%;
+      background: #fff;
+      border-radius: 20px;
+      overflow: hidden
+    }
+
+    .range-img {
+      height: 200px;
+    }
+
+    .range-content {
+      text-align: center;
+      padding: 16px
+    }
+
+    .range-content h3 {
+      font-size: 18px;
+      margin-bottom: 6px
+    }
+
+    .range-content p {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 12px
+    }
+
+    .btn {
+      background: var(--gold);
+      color: #fff;
+      padding: 10px 22px;
+      border-radius: 22px;
+      font-size: 14px
+    }
+
+    /* ===== OUR PRODUCTS ===== */
+    .subtitle {
+      text-align: center;
+      color: var(--muted);
+      margin-top: -10px;
+      margin-bottom: 20px
+    }
+
+    .tabs {
+      text-align: center;
+      font-size: 22px;
+      font-weight: 500;
+      margin-bottom: 20px
+    }
+
+    .tabs span {
+      margin: 0 10px;
+      padding-bottom: 6px
+    }
+
+    .tabs .active {
+      border-bottom: 3px solid var(--gold)
+    }
+
+    .icon-filters {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      text-align: center;
+      margin-bottom: 24px
+    }
+
+    .icon-box {
+      font-size: 13px
+    }
+
+    .icon-img {
+      width: 27;
+      height: 28px;
+      margin-bottom: 36px
+    }
+
+    .icon-box.active span {
+      border-bottom: 2px solid var(--gold)
+    }
+
+    .product-card {
+      min-width: 85%;
+      background: #fff;
+      border-radius: 20px;
+      overflow: hidden
+    }
+
+    .product-img {
+      height: 220px;
+      background: #eee
+    }
+
+    .product-info {
+      padding: 16px
+    }
+
+    .product-info h4 {
+      font-size: 18px;
+      margin-bottom: 6px
+    }
+
+    .product-info p {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 12px
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px
+    }
+
+    .buy {
+      background: var(--gold);
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 10px
+    }
+
+    .cart {
+      background: #fff;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 8px 18px;
+      border-radius: 10px
+    }
+
+    .center {
+      text-align: center;
+      margin: 26px 0
+    }
+
+    /* ===== INNER PEACE ===== */
+    .peace {
+      background: var(--soft)
+    }
+
+    .peace h2 {
+      text-align: left;
+      font-size: 30px;
+      margin-bottom: 14px
+    }
+
+    .peace p {
+      font-size: 18px;
+      line-height: 1.6;
+      margin-bottom: 18px
+    }
+
+    .peace-slider {
+      height: 220px;
+      background: #eee;
+      border-radius: 24px;
+      position: relative;
+      margin: 20px 0
+    }
+
+    .peace-nav {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      display: flex;
+      gap: 8px
+    }
+
+    /* ===== ABOUT ===== */
+    .about h3 {
+      font-size: 22px;
+      margin-bottom: 6px
+    }
+
+    .about h2 {
+      text-align: left
+    }
+
+    .about p {
+      font-size: 18px;
+      line-height: 1.7
+    }
+
+    /* ===== CONTACT ===== */
+    .contact-item {
+      margin-bottom: 22px;
+      font-size: 18px
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 30px 16px
+    }
+
+    footer h4 {
+      font-size: 22px;
+      margin-bottom: 10px
+    }
+
+    .pay-row {
+      display: flex;
+      gap: 14px;
+      margin: 10px 0
+    }
+
+    .hr {
+      height: 1px;
+      background: #000;
+      margin: 20px 0
+    }
+
+    .copy {
+      font-size: 16px
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-logo"><img src="./assets/logo/2nd%20logo%20export.svg" alt="Logo"></div>
+      <div class="brand-divider"></div>
+      <div class="brand-text">Ganga<span>Furniture</span></div>
+    </div>
+    <div class="icons">
+      <div class="icon"><img src="./assets/icons/A%20heart-shaped%20like%20.png" alt="Heart"></div>
+      <div class="icon"><img src="./assets/icons/2D%20shopping%20cart%20ico.png" alt="Cart"></div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-wrap">
+      <div class="hero-img"><img src="./assets/footage%20images/ChatGPT%20Image%20Jan%2010,%202026,%2010_21_11%20PM.png"
+          alt="Hero Image"></div>
+      <div class="hero-text">New<br>Design</div>
+      <div class="hero-nav">
+        <button class="hero-btn">â€¹</button>
+        <button class="hero-btn">â€º</button>
+      </div>
+    </div>
+    <div class="hero-dots">
+      <div class="dot active"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Browse The Range</h2>
+    <div class="scroll-row">
+      <div class="range-card">
+        <div class="range-img"><img src="./assets/footage%20images/Dining%20cozy%20dining%20s.png" alt="Dining"></div>
+        <div class="range-content">
+          <h3>Dining</h3>
+          <p>Cozy dining setups, natural textures, and warm lighting.</p>
+          <button class="btn">Explore Dining</button>
+        </div>
+      </div>
+      <div class="range-card">
+        <div class="range-img"><img src="./assets/footage%20images/Living%20relaxed%20space.png" alt="Living"></div>
+        <div class="range-content">
+          <h3>Living</h3>
+          <p>Relaxed spaces with neutral palettes and soft furnishings.</p>
+          <button class="btn">Explore Living</button>
+        </div>
+      </div>
+      <div class="range-card">
+        <div class="range-img"><img src="./assets/footage%20images/A%20cozy%20bedroom%20fully.png" alt="Bedroom"></div>
+        <div class="range-content">
+          <h3>Bedroom</h3>
+          <p>Minimalist corners crafted for calm and comfort.</p>
+          <button class="btn">Explore Bedroom</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Our Products</h2>
+    <div class="subtitle">Handpicked items with new arrivals and special discounts.</div>
+    <div class="tabs"><span class="active">Furniture</span>|<span> CNC</span>|<span> Haritage</span></div>
+
+    <div class="icon-filters">
+      <div class="icon-box active">
+        <div class="icon-img"><img src="./assets/icons/badroom.png" alt="Bedroom"></div><span>Bedroom</span>
+      </div>
+      <div class="icon-box">
+        <div class="icon-img"><img src="./assets/icons/outdoor.png" alt="Outdoor"></div><span>Outdoor</span>
+      </div>
+      <div class="icon-box">
+        <div class="icon-img"><img src="./assets/icons/living%20room.png" alt="Living room"></div><span>Living
+          room</span>
+      </div>
+      <div class="icon-box">
+        <div class="icon-img"><img src="./assets/icons/dining%20room.png" alt="Dining"></div><span>Dining</span>
+      </div>
+      <div class="icon-box">
+        <div class="icon-img"><img src="./assets/icons/office.png" alt="Office"></div><span>Office</span>
+      </div>
+      <div class="icon-box">
+        <div class="icon-img"><img src="./assets/icons/storage.png" alt="Storage"></div><span>Storage</span>
+      </div>
+    </div>
+
+    <!-- First scroll row: 4 cards -->
+    <div class="scroll-row">
+      <div class="product-card">
+        <div class="product-img"></div>
+        <div class="product-info">
+          <h4>Solid Wood Bed</h4>
+          <p>Clean lines, natural wood finish.</p>
+          <div class="actions"><button class="buy">BUY</button><button class="cart">Add to cart</button></div>
+        </div>
+      </div>
+      <div class="product-card">
+        <div class="product-img"></div>
+        <div class="product-info">
+          <h4>Solid Wood Wardrobe</h4>
+          <p>Spacious wardrobe with hanging and shelf storage.</p>
+          <div class="actions"><button class="buy">BUY</button><button class="cart">Add to cart</button></div>
+        </div>
+      </div>
+      <div class="product-card">
+        <div class="product-img"></div>
+        <div class="product-info">
+          <h4>Modern Closet</h4>
+          <p>Sliding door closet with mirror and drawers.</p>
+          <div class="actions"><button class="buy">BUY</button><button class="cart">Add to cart</button></div>
+        </div>
+      </div>
+      <div class="product-card">
+        <div class="product-img"></div>
+        <div class="product-info">
+          <h4>Wooden Dresser</h4>
+          <p>Classic dresser with multiple drawers for storage.</p>
+          <div class="actions"><button class="buy">BUY</button><button class="cart">Add to cart</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Second scroll row: 4 cards -->
+    <div class="scroll-row" style="margin-top:22px">
+      <div class="product-card">
+        <div class="product-img"></div>
+        <div class="product-info">
+          <h4>Nightstand</h4>
+          <p>Compact nightstand with drawer and open shelf.</p>
+          <div class="actions"><button class="buy">BUY</button><button class="cart">Add to cart</button></div>
+        </div>
+      </div>
+      <div class="product-card">
+        <div class="product-img"></div>
+        <div class="product-info">
+          <h4>Solid Wood Dining Table</h4>
+          <p>Spacious table with elegant finish for family meals.</p>
+          <div class="actions"><button class="buy">BUY</button><button class="cart">Add to cart</button></div>
+        </div>
+      </div>
+      <div class="product-card">
+        <div class="product-img"></div>
+        <div class="product-info">
+          <h4>Outdoor Chair</h4>
+          <p>Weather-resistant, perfect for garden.</p>
+          <div class="actions"><button class="buy">BUY</button><button class="cart">Add to cart</button></div>
+        </div>
+      </div>
+      <div class="product-card">
+        <div class="product-img"></div>
+        <div class="product-info">
+          <h4>Benches</h4>
+          <p>Durable benches for garden or patio.</p>
+          <div class="actions"><button class="buy">BUY</button><button class="cart">Add to cart</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="center"><button class="btn">More</button></div>
+  </section>
+
+  <section class="peace">
+    <h2>Inner peace</h2>
+    <p>Our designer already made a lot of beautiful prototype rooms to inspire you.</p>
+    <button class="btn">Explore More</button>
+    <div class="peace-slider">
+      <div class="peace-nav"><button class="hero-btn">â€¹</button><button class="hero-btn">â€º</button></div>
+    </div>
+    <p style="text-align:center">Share your setup with #GangaFurniture</p>
+  </section>
+
+  <section class="about">
+    <h3>About</h3>
+    <h2>Ganga Furniture</h2>
+    <p>We are a leading manufacturer of high-quality wooden furniture, specializing in custom designs and traditional
+      craftsmanship. Our products are made from premium solid wood, ensuring durability and elegance for your home. With
+      years of experience, we provide personalized services to meet your unique needs, from bedroom sets to outdoor
+      furniture.</p>
+  </section>
+
+  <section>
+    <div class="contact-item">ðŸ“ž 99834559678<br><small>You can call 7 days a week (Monday-Saturday). you can also chat
+        with us by clicking whatsapp button.</small></div>
+    <div class="contact-item">âœ‰ VishwakarmaFurniture@gmail.com<br>400 University Drive Suite 200 Coral Gables, FL
+      33134 USA</div>
+  </section>
+
+  <footer>
+    <h4>Follow Us On</h4>
+    <div class="icon-img" style="width:40px"></div>
+    <h4 style="margin-top:16px">Payment Methods</h4>
+    <div class="pay-row">
+      <div class="icon-img" style="width:60px"></div>
+      <div class="icon-img" style="width:60px"></div>
+    </div>
+    <div class="hr"></div>
+    <div class="copy">Copyright 2026 Ganga Furniture. All rights reserved</div>
+  </footer>
+
+</body>
+
+</html>

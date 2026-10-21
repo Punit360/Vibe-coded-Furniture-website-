@@ -1,0 +1,819 @@
+<!-- Login/Signup Page - Full Theme from home backup.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Signup</title>
+    <!-- Link to main theme CSS (update path if needed) -->
+    <link rel="stylesheet" href="home css.css">
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // ========== SIGN IN ========== //
+            const formSignin = document.getElementById("form-signin");
+            const errorPassword = document.getElementById("error-password");
+            const errorOtp = document.getElementById("error-otp");
+
+            formSignin.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                // Reset errors
+                errorPassword.style.display = 'none';
+                errorOtp.style.display = 'none';
+
+                const email = document.getElementById("signin-email").value.trim();
+                const password = document.getElementById("signin-password").value;
+
+                // Collect OTP
+                const otpInputs = document.querySelectorAll('#form-signin .otp-group input');
+                let otp = '';
+                otpInputs.forEach(input => otp += input.value);
+
+                if (otp.length !== 6) {
+                    errorOtp.innerText = "Please enter 6-digit OTP";
+                    errorOtp.style.display = 'block';
+                    return;
+                }
+
+                try {
+                    const res = await fetch("/api/auth/login", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email, password, otp }),
+                    });
+
+                    const data = await res.json();
+
+                    if (res.ok) {
+                        localStorage.setItem("token", data.token);
+                        localStorage.setItem("role", data.role);
+                        localStorage.setItem("userEmail", email);
+                        localStorage.setItem("name", data.name);
+                        window.location.href = "home.html";
+                    } else {
+                        // Handle specific errors
+                        const msg = (data.message || "").toLowerCase();
+                        if (res.status === 404 || msg.includes("user not found")) {
+                            errorPassword.innerText = "Email not found, please create an account first";
+                            errorPassword.style.display = 'block';
+                        } else if (msg.includes("otp")) {
+                            errorOtp.innerText = "Wrong OTP";
+                            errorOtp.style.display = 'block';
+                        } else if (msg.includes("password") || msg.includes("credentials")) {
+                            errorPassword.innerText = "Wrong password";
+                            errorPassword.style.display = 'block';
+                        } else {
+                            // Fallback
+                            errorPassword.innerText = data.message || "Login failed";
+                            errorPassword.style.display = 'block';
+                        }
+                    }
+                } catch (err) {
+                    console.error("Login error:", err);
+                    errorPassword.innerText = "Something went wrong. Please try again.";
+                    errorPassword.style.display = 'block';
+                }
+            });
+
+            // Link to switch to Signup tab
+            const linkToSignup = document.getElementById('link-to-signup');
+            if (linkToSignup) {
+                linkToSignup.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.getElementById('tab-signup').click();
+                });
+            }
+
+            // ========== SIGN UP ========== //
+            const formSignup = document.getElementById("form-signup");
+            const signupFeedback = document.getElementById("signup-feedback");
+
+            const showSignupMsg = (text, isError = false) => {
+                signupFeedback.innerText = text;
+                signupFeedback.style.color = isError ? 'red' : 'green';
+                signupFeedback.style.display = 'block';
+            };
+
+            formSignup.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                showSignupMsg("", false); // clear
+                signupFeedback.style.display = 'none';
+
+                const email = document.getElementById("signup-email").value.trim();
+                const password = document.getElementById("signup-password").value;
+                const confirm = document.getElementById("signup-confirm").value;
+                const name = email.split("@")[0]; // Simple name generation
+
+                if (password !== confirm) {
+                    showSignupMsg("Passwords do not match", true);
+                    return;
+                }
+
+                // Collect OTP
+                const otpInputs = document.querySelectorAll('#form-signup .otp-group input');
+                let otp = '';
+                otpInputs.forEach(input => otp += input.value);
+
+                if (otp.length !== 6) {
+                    showSignupMsg("Please enter 6-digit OTP", true);
+                    return;
+                }
+
+                try {
+                    const res = await fetch("/api/auth/register", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ name, email, password, otp }),
+                    });
+
+                    const data = await res.json();
+
+                    if (res.ok) {
+                        showSignupMsg("Account created! Redirecting to login...", false);
+                        setTimeout(() => {
+                            document.getElementById("tab-signin").click();
+                            // Optional: pre-fill email in signin
+                            document.getElementById("signin-email").value = email;
+                        }, 1500);
+                    } else {
+                        showSignupMsg(data.message || "Signup failed", true);
+                    }
+                } catch (err) {
+                    console.error("Signup error:", err);
+                    showSignupMsg("Something went wrong. Please try again.", true);
+                }
+            });
+
+            // Tab switching logic
+            const tabSignin = document.getElementById('tab-signin');
+            const tabSignup = document.getElementById('tab-signup');
+            tabSignin.addEventListener('click', () => {
+                tabSignin.classList.add('active');
+                tabSignup.classList.remove('active');
+                formSignin.classList.add('active');
+                formSignup.classList.remove('active');
+            });
+            tabSignup.addEventListener('click', () => {
+                tabSignup.classList.add('active');
+                tabSignin.classList.remove('active');
+                formSignup.classList.add('active');
+                formSignin.classList.remove('active');
+            });
+
+            // OTP input auto-focus & Paste Logic
+            document.querySelectorAll('.otp-group').forEach(group => {
+                const inputs = group.querySelectorAll('input');
+
+                inputs.forEach((input, idx) => {
+                    // Auto-focus next
+                    input.addEventListener('input', function () {
+                        if (this.value.length === 1 && idx < inputs.length - 1) {
+                            inputs[idx + 1].focus();
+                        }
+                    });
+
+                    // Backspace - focus prev
+                    input.addEventListener('keydown', function (e) {
+                        if (e.key === 'Backspace' && !this.value && idx > 0) {
+                            inputs[idx - 1].focus();
+                        }
+                    });
+
+                    // Paste Logic
+                    input.addEventListener('paste', function (e) {
+                        e.preventDefault();
+                        const pasteData = (e.clipboardData || window.clipboardData).getData('text');
+                        const digits = pasteData.replace(/\D/g, ''); // Keep only numbers
+
+                        if (!digits) return;
+
+                        // Fill inputs starting from current one (or first if user focused elsewhere, typically we want to fill sequence)
+                        // Actually, better UX: always fill from index 0 if pasting a long string, 
+                        // OR fill from current index. Let's fill from current index for flexibility, 
+                        // but if checks are tricky, filling from 0 is safer for full codes.
+                        // Let's go with: Paste content distributes from the focused input onwards.
+
+                        let charIdx = 0;
+                        for (let i = idx; i < inputs.length && charIdx < digits.length; i++) {
+                            inputs[i].value = digits[charIdx];
+                            charIdx++;
+                            // Focus the last filled input
+                            if (i === inputs.length - 1 || charIdx === digits.length) {
+                                inputs[i].focus();
+                            }
+                        }
+                    });
+                });
+            });
+
+            // Forgot password modal logic
+            const forgotLink = document.getElementById('forgotPasswordLink');
+            const forgotModal = document.getElementById('forgotModal');
+            const forgotStep1 = document.getElementById('forgotStep1');
+            const forgotStep2 = document.getElementById('forgotStep2');
+            const forgotForm1 = document.getElementById('forgotForm1');
+            const forgotForm2 = document.getElementById('forgotForm2');
+
+            forgotLink.addEventListener('click', function (e) {
+                e.preventDefault();
+                forgotModal.style.display = 'flex';
+                forgotStep1.style.display = 'block';
+                forgotStep2.style.display = 'none';
+            });
+
+            // Auto-open forgot modal when navigated with hash (e.g. login-signup.html#forgot)
+            if (location.hash && (location.hash === '#forgot' || location.hash === '#reset')) {
+                forgotModal.style.display = 'flex';
+                forgotStep1.style.display = 'block';
+                forgotStep2.style.display = 'none';
+            }
+
+            forgotForm1.addEventListener('submit', function (e) {
+                e.preventDefault();
+                // For testing, skip OTP and go to next step
+                // Simulate sending OTP: auto-fill OTP inputs
+                const inputs = forgotStep1.querySelectorAll('.otp-group input');
+                const code = String(Math.floor(1000 + Math.random() * 9000));
+                for (let i = 0; i < inputs.length; i++) { inputs[i].value = code.charAt(i) || ''; }
+                // move to next step
+                forgotStep1.style.display = 'none';
+                forgotStep2.style.display = 'block';
+            });
+
+            forgotForm2.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const newPass = document.getElementById('new-password').value;
+                const confirmPass = document.getElementById('confirm-new-password').value;
+                const errorDiv = document.getElementById('forgot-password-error');
+
+                if (newPass !== confirmPass) {
+                    errorDiv.innerText = "Passwords do not match";
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+                errorDiv.style.display = 'none';
+
+                // Here you would change password. For demo: clear token (logout) and redirect to home
+                localStorage.removeItem('token');
+                localStorage.removeItem('userEmail');
+                forgotModal.style.display = 'none';
+                // send user to homepage logged out
+                window.location.href = 'home.html';
+            });
+
+            // Close modal on outside click
+            forgotModal.addEventListener('click', function (e) {
+                if (e.target === forgotModal) {
+                    forgotModal.style.display = 'none';
+                }
+            });
+
+            // OTP Logic
+            // OTP Logic
+            async function sendOtp(type) {
+                let emailId, btnId, timerId, msgId, containerId;
+
+                if (type === 'signin') {
+                    emailId = 'signin-email'; btnId = 'btn-otp-signin'; timerId = 'timer-signin'; msgId = 'otp-msg-signin';
+                    containerId = 'form-signin';
+                } else if (type === 'signup') {
+                    emailId = 'signup-email'; btnId = 'btn-otp-signup'; timerId = 'timer-signup'; msgId = 'otp-msg-signup';
+                    containerId = 'form-signup';
+                } else { // forgot
+                    emailId = 'forgot-email'; btnId = 'btn-otp-forgot'; timerId = 'timer-forgot'; msgId = 'otp-msg-forgot';
+                    containerId = 'forgotForm1';
+                }
+
+                if (containerId) {
+                    // Clear OTP inputs when Send/Resend is clicked
+                    const otpInputs = document.querySelectorAll(`#${containerId} .otp-group input`);
+                    otpInputs.forEach(input => input.value = '');
+                }
+
+                const email = document.getElementById(emailId).value.trim();
+                const btn = document.getElementById(btnId);
+                const timerSpan = document.getElementById(timerId);
+                const msgDiv = document.getElementById(msgId);
+
+                // Helper to show msg
+                const showMsg = (text, isError = false) => {
+                    msgDiv.innerText = text;
+                    msgDiv.style.color = isError ? 'var(--danger)' : 'green';
+                    msgDiv.style.display = 'block';
+                    setTimeout(() => {
+                        msgDiv.style.display = 'none';
+                    }, 5000);
+                };
+
+                if (!email || !email.includes('@')) {
+                    showMsg("Please enter a valid email", true);
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.textContent = "Sending...";
+
+                try {
+                    const res = await fetch("/api/auth/send-otp", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email })
+                    });
+                    const data = await res.json();
+
+                    if (res.ok) {
+                        showMsg("OTP sent to " + email);
+                        startTimer(btn, timerSpan);
+                        btn.textContent = "Resend";
+                    } else {
+                        showMsg(data.message || "Failed to send OTP", true);
+                        btn.disabled = false;
+                        btn.textContent = "Send OTP";
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showMsg("Error sending OTP", true);
+                    btn.disabled = false;
+                    btn.textContent = "Send OTP";
+                }
+            }
+
+            function startTimer(btn, timerSpan) {
+                let seconds = 30;
+                timerSpan.style.display = 'block';
+                timerSpan.textContent = `00:${seconds}`;
+                btn.disabled = true;
+
+                const interval = setInterval(() => {
+                    seconds--;
+                    timerSpan.textContent = `00:${seconds < 10 ? '0' + seconds : seconds}`;
+                    if (seconds <= 0) {
+                        clearInterval(interval);
+                        btn.disabled = false;
+                        timerSpan.style.display = 'none';
+                    }
+                }, 1000);
+            }
+
+            const btnSigninOtp = document.getElementById('btn-otp-signin');
+            if (btnSigninOtp) btnSigninOtp.addEventListener('click', () => sendOtp('signin'));
+
+            const btnSignupOtp = document.getElementById('btn-otp-signup');
+            if (btnSignupOtp) btnSignupOtp.addEventListener('click', () => sendOtp('signup'));
+
+            const btnForgotOtp = document.getElementById('btn-otp-forgot');
+            if (btnForgotOtp) btnForgotOtp.addEventListener('click', () => sendOtp('forgot'));
+
+        });
+    </script>
+
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            font-family: Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            color: var(--text);
+        }
+
+        .auth-container {
+            background: var(--white);
+            box-shadow: 0 8px 32px 0 rgba(184, 142, 47, 0.10);
+            border-radius: 16px;
+            padding: 40px 32px;
+            width: 100%;
+            max-width: 400px;
+            margin: 32px auto;
+            border: 1px solid var(--line);
+        }
+
+        .auth-tabs {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 32px;
+            background: var(--bg-2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 14px 0;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--muted);
+            background: transparent;
+            border-bottom: 2px solid transparent;
+            transition: border-color 0.2s, color 0.2s, background 0.2s;
+        }
+
+        .auth-tab.active {
+            border-bottom: 2px solid var(--accent);
+            color: var(--accent);
+            background: var(--white);
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        input[type="email"],
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+            font-size: 16px;
+            background: var(--bg-2);
+            color: var(--text);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="text"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 2px 12px rgba(184, 142, 47, 0.12);
+            outline: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: background 0.2s;
+            box-shadow: 0 2px 8px rgba(184, 142, 47, 0.08);
+        }
+
+        .btn:hover {
+            background: var(--accent-2);
+        }
+
+        .otp-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .otp-group input {
+            width: 40px;
+            text-align: center;
+            font-size: 18px;
+            background: var(--bg-2);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 14px;
+        }
+
+        .form-footer a {
+            color: var(--accent);
+            text-decoration: underline;
+            font-weight: 500;
+        }
+
+        @media (max-width: 500px) {
+            .auth-container {
+                padding: 24px 20px;
+                width: 90%;
+                margin: 20px auto;
+            }
+        }
+
+        /* OTP Styles */
+        .otp-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .otp-action {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            min-width: 90px;
+            flex-grow: 1;
+        }
+
+        .btn-otp {
+            padding: 8px 14px;
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--text);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.2s;
+            width: auto;
+        }
+
+        .btn-otp:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-otp:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .otp-timer {
+            font-size: 12px;
+            color: var(--danger);
+            margin-top: 5px;
+            font-weight: 600;
+        }
+
+        /* Password Toggle Styles */
+        .password-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .password-container input {
+            padding-right: 40px;
+            /* Space for eye icon */
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+        }
+
+        .toggle-password:hover {
+            color: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="auth-tabs">
+            <div class="auth-tab active" id="tab-signin">Sign In</div>
+            <div class="auth-tab" id="tab-signup">Create Account</div>
+        </div>
+        <!-- Sign In Form -->
+        <form class="auth-form active" id="form-signin">
+            <div class="form-group">
+                <label for="signin-email">Email Address</label>
+                <input type="email" id="signin-email" required>
+            </div>
+            <div class="form-group">
+                <label for="signin-password">Password</label>
+                <input type="password" id="signin-password" required>
+                <div id="error-password" style="color:red;font-size:12px;margin-top:4px;display:none;"></div>
+            </div>
+            <div class="form-group">
+                <input type="checkbox" id="adminCheck" style="margin-right:6px;"> <label for="adminCheck"
+                    style="font-size:14px;">Sign in as Admin</label>
+            </div>
+            <div class="form-group">
+                <label>OTP Verification</label>
+                <div class="otp-wrapper">
+                    <div class="otp-group">
+                        <input type="text" maxlength="1" required>
+                        <input type="text" maxlength="1" required>
+                        <input type="text" maxlength="1" required>
+                        <input type="text" maxlength="1" required>
+                        <input type="text" maxlength="1" required>
+                        <input type="text" maxlength="1" required>
+                    </div>
+                    <div class="otp-action">
+                        <button type="button" class="btn-otp" id="btn-otp-signin">Send OTP</button>
+                        <span id="timer-signin" class="otp-timer" style="display:none;">00:30</span>
+                        <div id="otp-msg-signin" style="font-size:12px;margin-top:4px;display:none;"></div>
+                    </div>
+                </div>
+                <div id="error-otp"
+                    style="color:var(--danger);font-size:12px;margin-top:6px;display:none;font-weight:500;"></div>
+            </div>
+            <button type="submit" class="btn">Sign In</button>
+            <div id="signin-error" style="color:red;font-size:14px;text-align:center;margin-top:10px;display:none;">
+            </div>
+            <div class="form-footer">
+                <a href="#" id="forgotPasswordLink">Forgot password?</a>
+                <p style="margin-top:10px;">Do not have an account? <a href="#" id="link-to-signup">Click here</a></p>
+            </div>
+        </form>
+        <!-- Sign Up Form -->
+        <form class="auth-form" id="form-signup">
+            <div class="form-group">
+                <label for="signup-email">Email Address</label>
+                <input type="email" id="signup-email" required>
+            </div>
+            <div class="form-group">
+                <label for="signup-password">New Password</label>
+                <div class="password-container">
+                    <input type="password" id="signup-password" required>
+                    <button type="button" class="toggle-password" data-target="signup-password">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="signup-confirm">Confirm Password</label>
+                <input type="password" id="signup-confirm" required>
+                <div id="signup-mismatch-error" style="color:red;font-size:12px;margin-top:4px;display:none;">Password
+                    mismatched</div>
+            </div>
+            <div class="form-group">
+                <label>OTP Verification</label>
+                <div class="otp-wrapper">
+                    <div class="otp-group">
+                        <input type="text" maxlength="1" required>
+                        <input type="text" maxlength="1" required>
+                        <input type="text" maxlength="1" required>
+                        <input type="text" maxlength="1" required>
+                        <input type="text" maxlength="1" required>
+                        <input type="text" maxlength="1" required>
+                    </div>
+                    <div class="otp-action">
+                        <button type="button" class="btn-otp" id="btn-otp-signup">Send OTP</button>
+                        <span id="timer-signup" class="otp-timer" style="display:none;">00:30</span>
+                        <div id="otp-msg-signup" style="font-size:12px;margin-top:4px;display:none;"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="signup-feedback" style="margin-bottom:10px;font-size:14px;text-align:center;display:none;"></div>
+            <button type="submit" class="btn">Create Account</button>
+        </form>
+    </div>
+    <!-- Forgot Password Modal -->
+    <div id="forgotModal"
+        style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);z-index:999;align-items:center;justify-content:center;">
+        <div id="forgotStep1" class="auth-container" style="max-width:350px;">
+            <h2 class="centered" style="margin-bottom:18px;">Forgot Password</h2>
+            <form id="forgotForm1">
+                <div class="form-group">
+                    <label for="forgot-email">Email Address</label>
+                    <input type="email" id="forgot-email" required>
+                </div>
+                <div class="form-group">
+                    <label>OTP Verification</label>
+                    <div class="otp-wrapper">
+                        <div class="otp-group">
+                            <input type="text" maxlength="1" required>
+                            <input type="text" maxlength="1" required>
+                            <input type="text" maxlength="1" required>
+                            <input type="text" maxlength="1" required>
+                            <input type="text" maxlength="1" required>
+                            <input type="text" maxlength="1" required>
+                        </div>
+                        <div class="otp-action">
+                            <button type="button" class="btn-otp" id="btn-otp-forgot">Send OTP</button>
+                            <span id="timer-forgot" class="otp-timer" style="display:none;">00:30</span>
+                            <div id="otp-msg-forgot" style="font-size:12px;margin-top:4px;display:none;"></div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn">Verify OTP</button>
+            </form>
+        </div>
+        <div id="forgotStep2" class="auth-container" style="max-width:350px;display:none;">
+            <h2 class="centered" style="margin-bottom:18px;">Set New Password</h2>
+            <form id="forgotForm2">
+                <div class="form-group">
+                    <label for="new-password">New Password</label>
+                    <div class="password-container">
+                        <input type="password" id="new-password" required>
+                        <button type="button" class="toggle-password" data-target="new-password">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="confirm-new-password">Confirm Password</label>
+                    <input type="password" id="confirm-new-password" required>
+                    <div id="forgot-password-error" style="color:red;font-size:12px;margin-top:4px;display:none;"></div>
+                </div>
+                <button type="submit" class="btn">Change Password</button>
+            </form>
+        </div>
+    </div>
+    <!-- JS is now in <head> and wrapped in DOMContentLoaded -->
+</body>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Toggle Password Visibility
+        document.querySelectorAll('.toggle-password').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent form submission
+                const targetId = btn.getAttribute('data-target');
+                const input = document.getElementById(targetId);
+
+                // SVG Icons
+                const eyeOpen = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+                const eyeClosed = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    btn.innerHTML = eyeClosed;
+                } else {
+                    input.type = 'password';
+                    btn.innerHTML = eyeOpen;
+                }
+            });
+        });
+
+        // Real-time Mismatch Validation (1s delay)
+        const setupMismatchCheck = (passId, confirmId, errorId) => {
+            const passInput = document.getElementById(passId);
+            const confirmInput = document.getElementById(confirmId);
+            const errorDiv = document.getElementById(errorId);
+            let timer;
+
+            if (!passInput || !confirmInput || !errorDiv) return;
+
+            confirmInput.addEventListener('input', () => {
+                // Hide error while typing
+                errorDiv.style.display = 'none';
+                clearTimeout(timer);
+
+                if (confirmInput.value.length > 0) {
+                    timer = setTimeout(() => {
+                        if (confirmInput.value !== passInput.value) {
+                            errorDiv.innerText = "Password mismatched";
+                            errorDiv.style.display = 'block';
+                        } else {
+                            errorDiv.style.display = 'none';
+                        }
+                    }, 1000); // 1 second delay
+                }
+            });
+
+            // Also check if password changes
+            passInput.addEventListener('input', () => {
+                if (confirmInput.value.length > 0 && confirmInput.value !== passInput.value) {
+                    // Determine if we should show error immediately or wait - user asked for delay on entering confirm
+                    // But if main password changes, mismatch is immediate. Let's respect the delay to avoid annoyance.
+                    clearTimeout(timer);
+                    timer = setTimeout(() => {
+                        if (confirmInput.value !== passInput.value) {
+                            errorDiv.innerText = "Password mismatched";
+                            errorDiv.style.display = 'block';
+                        }
+                    }, 1000);
+                }
+            });
+        };
+
+        setupMismatchCheck('signup-password', 'signup-confirm', 'signup-mismatch-error');
+        setupMismatchCheck('new-password', 'confirm-new-password', 'forgot-password-error');
+    });
+</script>
+</body>
+
+</html>
